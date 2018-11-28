@@ -1,0 +1,164 @@
+county,site,pm2010,pm2011,pm2012,pm2013,pm2014,pm2015,pm2016,pm2017
+Alameda,Berkeley-6th Street,*,*,*,*,*,*,*,*
+Alameda,Berkeley-Aquatic Park,*,*,*,*,*,*,*,7.1
+Alameda,Fremont-Chapel Way,*,*,*,*,*,*,*,*
+Alameda,Livermore-793 Rincon Avenue,0,2,0,4,1.2,0,0,2
+Alameda,Oakland-9925 International Blvd,0,3,0,2,1,1,0,7
+Alameda,Oakland-Laney College,*,*,*,*,*,1,0,8
+Alameda,Oakland-West,*,*,*,2.2,1,3.3,0,7.1
+Butte,Chico-East Avenue,*,*,*,2.1,1,2.2,1.2,2.3
+Butte,Chico-Manzanita Avenue,0,36.5,*,*,*,*,*,*
+Butte,Gridley-Cowee Avenue,*,*,*,*,*,*,*,*
+Butte,Paradise-Fire Station #1,*,*,*,*,*,*,*,*
+Butte,Paradise-Theater,*,*,*,*,*,*,*,*
+Calaveras,San Andreas-Gold Strike Road,0,0,0,1.1,0,4,0,*
+Contra Costa,Concord-2975 Treat Blvd,1,2.1,0,1,0,0,0,6
+Contra Costa,San Pablo-Rumrill Blvd,*,*,*,2,1.1,0,0,9.3
+Colusa,Colusa-Sunrise Blvd,*,*,0,0,0,0,0,7.7
+Del Norte,CRESCENT CITY-CRESCENT ELK SCHOOL,*,*,*,*,*,*,*,*
+Fresno,Clovis-N Villa Avenue,19.8,38.3,24.1,25.1,40.4,15.4,8.2,19.2
+Fresno,Fresno-1st Street,21.7,39,*,*,*,*,*,*
+Fresno,Fresno-Garland,*,*,29.4,42,34,20,16,31.1
+Fresno,Fresno-Hamilton and Winery,9.5,38,22.7,*,24.8,16.3,15.3,27.6
+Fresno,Huron-16875 4th Street,*,*,*,*,*,*,*,*
+Fresno,Tranquility-32650 West Adams Avenue,*,2.1,0,7.5,*,7.6,2.4,6
+Glenn,Willows-720 N Colusa Street,*,*,*,*,*,*,*,*
+Humboldt,Eureka-Humboldt Hill,*,*,0,0,0,0,0,*
+Humboldt,Eureka-I Street,0,*,*,0,*,*,*,*
+Humboldt,Eureka-Jacobs,0,*,0,*,*,0,0,3.1
+Imperial,Brawley-220 Main Street,*,3.2,0,0,0,0,5.9,3.1
+Imperial,Calexico-East,*,*,*,*,*,*,*,*
+Imperial,Calexico-Ethel Street,6.3,*,*,3,9.9,3.5,4.5,5.5
+Imperial,El Centro-9th Street,0,6.2,0,0,0,0,0,0
+Inyo,Bishop-Line,*,*,*,*,*,*,0,0
+Inyo,Keeler-Cerro Gordo Road,5,9,4,8.2,7,3.2,4.1,7.3
+Kern,Bakersfield-410 E Planz Road,*,22.1,21.8,49.4,*,38,*,32.2
+Kern,Bakersfield-5558 California Avenue,28.7,*,24.4,50.4,39.3,32.3,25.5,30.2
+Kern,Bakersfield-Golden State Highway,*,*,*,*,*,30.8,21.8,29.7
+Kern,Lebec-Beartrap Road,*,*,*,*,*,*,*,*
+Kern,Mojave-923 Poole Street,*,*,2.1,*,1,2,0,0
+Kern,Ridgecrest-100 West California Avenue,0,*,*,0,*,0,*,*
+Kern,Ridgecrest-Ward,*,*,*,*,*,*,*,*
+Kings,Corcoran-Patterson Avenue,23.9,*,*,43.9,31,*,16.3,26.4
+Kings,Hanford-S Irwin Street,*,39.3,25,44.7,33.8,27.8,25,33.8
+Los Angeles,Azusa,*,6.1,3,0,*,6.1,0,0
+Los Angeles,Burbank-W Palm Avenue,4.2,5.8,2.2,4.4,*,*,*,*
+Los Angeles,Compton-700 North Bullis Road,3.4,0,3.3,3.1,*,9,3.3,15.4
+Los Angeles,Glendora-Laurel,*,*,*,*,*,*,*,*
+Los Angeles,Lancaster-43301 Division Street,*,*,*,*,*,*,2,0
+Los Angeles,Long Beach-Route 710 Near Road,*,*,*,*,*,*,0,8
+Los Angeles,Los Angeles-North Main Street,2.2,4.5,4.2,1.1,*,8.4,2.1,6.1
+Los Angeles,North Long Beach,0,1.2,4.1,2.2,*,3.1,0,4.5
+Los Angeles,Pasadena-S Wilson Avenue,*,*,*,*,*,6.2,0,0
+Los Angeles,Pico Rivera-4144 San Gabriel,0,3.3,3.1,0,*,9.4,6.2,3.2
+Los Angeles,Reseda,*,3.3,6.9,3,*,3.6,0,0
+Los Angeles,Santa Clarita,*,*,*,*,*,*,*,*
+Los Angeles,South Long Beach,0,3,4.8,1.1,*,4.6,0,5.1
+Lake,Lakeport-Lakeport Blvd,0,0,0,0,0,6.1,0,*
+Lake,Lakeport-S. Main Street,*,*,*,*,*,*,*,*
+Madera,Madera-28261 Avenue 14,*,34,17.7,24,26,12.1,9,16.7
+Mendocino,Ukiah-County Library,0,0,*,*,0,3.1,0,6
+Mendocino,Willits-125 E Commercial Street,0,0,0,*,*,4.2,0,6.1
+Merced,Merced-2334 M Street,10.1,6.6,12.6,35.5,18.2,15.2,6.3,20.4
+Merced,Merced-S Coffee Avenue,*,21.4,8.6,16.1,17,15.7,5.2,18.7
+Monterey,Carmel Valley-Ford Road,*,*,0,0,0,1,11.9,1
+Monterey,King City-415 Pearl Street,*,*,0,0,0,0,0,1
+Monterey,Salinas-#3,0,0,0,0,0,0,0,1
+Mariposa,Yosemite Village-Visitor Center,*,*,*,*,*,*,*,*
+Marin,Point Reyes,*,*,*,*,*,*,*,*
+Marin,San Rafael,*,1,0,2,1,2,0,8.1
+Napa,Napa-Jefferson Avenue,*,*,*,1.1,0,1,0,13.3
+Nevada,Grass Valley-Litton Building,*,0,0,0,*,0,0,3
+Nevada,Truckee-Fire Station,*,*,*,*,*,*,0,*
+Orange,Anaheim-Pampas Lane,0,2,4.2,1.1,*,*,1.1,*
+Orange,Mission Viejo-26081 Via Pera,0,0,0,0,*,0,0,*
+Placer,Auburn-11645 Atwood Road,*,*,2,7.2,4,1,0,0
+Placer,Colfax-City Hall,*,*,*,*,*,*,*,*
+Placer,Lincoln-1445 1st Street,*,*,*,*,*,*,*,*
+Placer,Lincoln-L Street,*,*,*,*,*,*,*,*
+Placer,Roseville-N Sunrise Blvd,0,6.1,0,0,0,0,0,0
+Placer,Tahoe City-221 Fairway Drive,*,*,*,*,*,*,*,*
+Plumas,Chester-222 1st Avenue,*,*,*,*,*,*,*,*
+Plumas,Portola-161 Nevada Street,9.2,6.1,*,*,*,*,*,*
+Plumas,Portola-Gulling Street,*,*,*,*,39.5,*,24.3,*
+Plumas,Quincy-N Church Street,0,9.3,*,*,3.8,3.5,1.1,15.5
+Riverside,Banning Airport,*,*,*,*,*,*,*,*
+Riverside,Indio-Jackson Street,0,0,0,0,*,*,0,*
+Riverside,Lake Elsinore-W Flint Street,*,*,*,*,*,*,*,*
+Riverside,Mira Loma Van Buren,8.7,8.2,7,9.2,*,17.6,7.3,10.1
+Riverside,Palm Springs-Fire Station,0,0,0,0,*,*,0,0
+Riverside,Riverside-Magnolia,6.3,7.1,*,3,*,*,*,*
+Riverside,Riverside-Rubidoux,4.2,4.2,7.1,6.2,*,10.3,5.1,7.2
+Riverside,Winchester-33700 Borel Road,*,*,*,*,*,*,*,*
+Sacramento,Elk Grove-Bruceville Road,*,*,*,*,*,*,*,*
+Sacramento,Folsom-Natoma Street,*,*,*,*,1,1.1,0,0
+Sacramento,Sacramento-Bercut Drive,*,*,*,*,*,*,*,5.9
+Sacramento,Sacramento-Del Paso Manor,0,9.5,0,13,0,8.7,3.3,6.2
+Sacramento,Sacramento-Health Dept Stockton Blvd,0,12.3,0,10.2,0,3.5,*,*
+Sacramento,Sacramento-T Street,0,18.4,0,6.1,0,3,0,6.1
+Sacramento,Sloughhouse,*,*,*,*,*,*,*,*
+Santa Barbara,Goleta-Fairview,*,*,*,*,0,0,*,10.2
+Santa Barbara,Lompoc-S H Street,*,*,*,*,*,0,0,*
+Santa Barbara,Santa Barbara-700 East Canon Perdido,0,0,0,0,0,*,*,*
+Santa Barbara,Santa Maria-906 S Broadway,0,0,0,0,0,0,0,0
+San Bernardino,Big Bear City-501 W. Valley Blvd,*,0,*,5.8,*,6,0,*
+San Bernardino,Crestline,*,*,*,*,*,*,*,*
+San Bernardino,Fontana-Arrow Highway,6.6,7.1,10.6,3,*,10.4,3.2,3
+San Bernardino,Ontario-1408 Francis Street,3.2,6.8,0,*,*,*,*,*
+San Bernardino,Ontario-Route 60 Near Road,*,*,*,*,*,12.4,7,9.2
+San Bernardino,San Bernardino-4th Street,5.9,*,0,3.3,*,6.9,3,3.3
+San Bernardino,Upland,*,*,*,*,*,*,*,*
+San Bernardino,Victorville-14306 Park Avenue,*,*,*,*,*,*,1,0
+San Benito,Hollister-Fairview Road,0,0,0,0,0,0,0,1
+Santa Clara,Cupertino-22601 Voss Ave,*,*,*,*,*,*,*,*
+Santa Clara,Gilroy-9th Street,0,1,0,0,0,2,0,2.2
+Santa Clara,San Jose-Jackson Street,3.1,3.1,2.1,6,2,2.1,0,6
+Santa Clara,San Jose-Knox Avenue,*,*,*,*,*,1,0,8.2
+Santa Cruz,Felton CalFire-6059 Highway 9,*,*,*,*,*,*,*,*
+Santa Cruz,San Lorenzo Valley-Middle School AMS,*,*,*,*,*,0,0,2.2
+Santa Cruz,Santa Cruz-2544 Soquel Avenue,0,0,0,0,0,0,0,2.2
+San Diego,Alpine-Victoria Drive,*,*,*,0,*,*,*,*
+San Diego,Camp Pendleton,*,*,0,1.1,*,*,*,*
+San Diego,Chula Vista,*,*,0,0,0,0,0,*
+San Diego,El Cajon-Floyd Smith Drive,*,*,*,*,*,*,*,*
+San Diego,El Cajon-Lexington Elementary School,*,*,*,*,*,*,*,0
+San Diego,El Cajon-Redwood Avenue,0,0,3.3,0,*,*,*,*
+San Diego,Escondido-E Valley Parkway,0,0,3.1,3.1,0,*,*,*
+San Diego,Otay Mesa-Donovan,*,*,*,*,*,*,*,*
+San Diego,San Diego-1110 Beardsley Street,0,0,1,1.1,1,0,*,*
+San Diego,San Diego-Kearny Villa Road,*,*,*,0,0,0,0,0
+San Diego,San Diego-Overland Avenue,0,0,*,*,*,*,*,*
+San Diego,San Ysidro-795 East San Ysidro Blvd,*,*,*,*,*,*,*,*
+San Francisco,San Francisco-Arkansas Street,3.2,2,1.1,2,0,0,0,7.3
+Shasta,Redding-Buckeye,0,*,*,0,*,*,*,*
+Shasta,Redding-Health Dept Roof,0,0,0,*,0,6.6,0,6.1
+Shasta,Shasta Lake-Shasta Dam Blvd,0,0,*,*,0,*,*,*
+Siskiyou,Yreka-Foothill Drive,*,0,0,12.3,*,*,0,26.3
+San Joaquin,Manteca-530 Fishback Rd,*,15.1,4.4,15.8,10.4,16.1,5.1,9.2
+San Joaquin,Stockton-Hazelton Street,5.3,11,6,27.6,16,12.2,4,16.9
+San Joaquin,Tracy-Airport,*,*,*,*,*,*,*,*
+San Luis Obispo,Arroyo Grande-2391 Willow Road,*,0,3.1,2.1,2,1,0,0
+San Luis Obispo,Atascadero-Lewis Avenue,0,0,0,0,2,*,*,*
+San Luis Obispo,Atascadero-Lift Station #5,*,*,*,*,*,*,0,0
+San Luis Obispo,Nipomo-Guadalupe Road,0,0,1,0,1,0,0,0
+San Luis Obispo,San Luis Obispo-3220 South Higuera St,0,0,0,0,0,*,*,0
+San Mateo,Redwood City,1,1,0,3.2,0,0,0,6.3
+Solano,Vallejo-304 Tuolumne Street,0,6,1,6,1.1,3,0,9.3
+Sonoma,Santa Rosa-5th Street,0,0,0,0,*,*,*,*
+Sonoma,Sebastopol-103 Morris Street,*,*,*,*,0,0,0,4
+Stanislaus,Modesto-14th Street,14.5,25,13,37.6,17,*,9,25.1
+Stanislaus,Turlock-S Minaret Street,*,36.3,25,40.3,23.9,16.8,13.8,29.2
+Sutter,Yuba City-Almond Street,1.1,8.6,1,0,*,1.1,1,2.4
+Tehama,Red Bluff-1834 Walnut Street,*,*,*,*,*,*,*,5.4
+Tehama,Red Bluff-310 S Main Street,*,*,*,*,*,*,*,*
+Trinity,Weaverville-Courthouse,*,*,*,*,*,*,*,*
+Tulare,Porterville-1839 Newcomb Street,*,*,*,*,*,*,*,*
+Tulare,Sequoia and Kings-Canyon Natl Park,*,*,*,*,*,*,*,*
+Tulare,Visalia-N Church Street,8.9,27.9,22,46.5,35.5,17.9,21.3,26.7
+Ventura,El Rio-Rio Mesa School #2,0,0,0,0,0,0,0,4.1
+Ventura,Ojai-Ojai Avenue,*,*,*,*,0,0,0,12.7
+Ventura,Piru-3301 Pacific Avenue,0,0,0,0,0,0,0,0
+Ventura,Simi Valley-Cochran Street,0,0,0,0,0,0,0,0
+Ventura,Thousand Oaks-Moorpark Road,0,0,1,0,0,0,0,0
+Yolo,Davis-UCD Campus,*,*,*,*,*,*,*,*
+Yolo,Woodland-Gibson Road,0,6.6,0,0,0,0,0,12.3
