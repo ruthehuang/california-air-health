@@ -15,5 +15,7 @@ knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.align = "center
 rm(list = ls())
 library(tidyverse); library(lubridate)
 
-pm25 <- read_csv("data/pm25_annual-days-above-nat-24-hr-stnd.csv", na = "*")
+# read in 2010-2017 California air quality data
+pm25 <- read_csv("data/pm25_annual-days-above-nat-24-hr-stnd.csv", na = "*") %>% group_by(county) %>% summarize(pm2010 = mean(pm2010, na.rm = T), pm2011 = mean(pm2011, na.rm = T), pm2012 = mean(pm2012, na.rm = T), pm2013 = mean(pm2013, na.rm = T), pm2014 = mean(pm2014, na.rm = T), pm2015 = mean(pm2015, na.rm = T), pm2016 = mean(pm2016, na.rm = T), pm2017 = mean(pm2017, na.rm = T))
+pm25
 ```
