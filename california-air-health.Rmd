@@ -11,14 +11,31 @@ knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.align = "center
 
 ## Frisbee is a lickey pupper
 
-```{r Read in data}
+```{r Read in data, eval = F}
 rm(list = ls())
 library(tidyverse); library(lubridate); library(stringr)
 
 # read in 2010-2017 California air quality data
-pm25 <- read_csv("data/pm25_annual-days-above-nat-24-hr-stnd.csv", na = "*") %>% group_by(county) %>% summarize(pm2010 = mean(pm2010, na.rm = T), pm2011 = mean(pm2011, na.rm = T), pm2012 = mean(pm2012, na.rm = T), pm2013 = mean(pm2013, na.rm = T), pm2014 = mean(pm2014, na.rm = T), pm2015 = mean(pm2015, na.rm = T), pm2016 = mean(pm2016, na.rm = T), pm2017 = mean(pm2017, na.rm = T)) %>% gather(year, pm25, pm2010:pm2017) %>% mutate(year = str_sub(year, 3, 6)) %>% arrange(county)
+pm25 <- read_csv("data/pm25_annual-days-above-nat-24-hr-stnd.csv", na = "*") %>% group_by(county) %>% summarize(pm2010 = mean(pm2010, na.rm = T), pm2011 = mean(pm2011, na.rm = T), pm2012 = mean(pm2012, na.rm = T), pm2013 = mean(pm2013, na.rm = T), pm2014 = mean(pm2014, na.rm = T), pm2015 = mean(pm2015, na.rm = T), pm2016 = mean(pm2016, na.rm = T), pm2017 = mean(pm2017, na.rm = T)) %>% gather(year, pm25, pm2010:pm2017) %>% mutate(year = as.numeric(str_sub(year, 3, 6))) %>% arrange(county)
 head(pm25)
 
 demo <- read_csv("data/age_edu_race.csv")[ , -1] %>% group_by(Geography, Year) %>% summarize(age60_perc = mean(age60_perc, na.rm = T), bachelor_perc = mean(bachelor_perc, na.rm = T), est.white.percent = mean(est.white.percent, na.rm = T), est.black.percent = mean(est.black.percent, na.rm = T)) %>% ungroup() %>% mutate(Geography = str_sub(Geography, 1, -20)) %>% rename(county = Geography, year = Year)
 head(demo)
+
+phosp <- read_csv("data/ca-oshpd-preventablehospitalizations-county-2005-2017.csv")
+ph_early <- phosp %>% filter(Year < 2016) %>% group_by(County, Year) %>% select(Year, County, PQIDescription, ObsRate_ICD9) %>% spread(PQIDescription, value = ObsRate_ICD9) %>% rename(diabetes_st = "Diabetes Short-term Complications", perf_appendix = "Perforated Appendix", diabetes_lt = "Diabetes Long-term Complications", asthma_older = "COPD or Asthma in Older Adults (Age 40+)", hypertension = "Hypertension", heart_fail = "Heart Failure", dehydration = "Dehydration", pneumonia = "Community-Acquired Pneumonia", uti = "Urinary Tract Infection", angina = "Angina without Procedure", diabetes_uc = "Uncontrolled Diabetes", asthma_young = "Asthma in Younger Adults (Age 18-39)", amputation_diab = "Lower-Extremity Amputation (Diabetes)", pq_overall = "Prevention Quality Overall Composite", pq_acute = "Prevention Quality Acute Composite", pq_chronic = "Prevention Quality Chronic Composite") %>% mutate(pq_diabetes = NA)
+
+ph_late <- phosp %>% filter(Year >= 2016) %>% group_by(County, Year) %>% select(Year, County, PQIDescription, ObsRate_ICD10) %>% spread(PQIDescription, value = ObsRate_ICD10) %>% rename(asthma_older = "COPD or Asthma in Older Adults (Age 40+)", diabetes_st = "Diabetes Short-term Complications", perf_appendix = "Perforated Appendix", diabetes_lt = "Diabetes Long-term Complications", hypertension = "Hypertension", heart_fail = "Heart Failure", dehydration = "Dehydration", pneumonia = "Community-Acquired Pneumonia", uti = "Urinary Tract Infection", diabetes_uc = "Uncontrolled Diabetes", asthma_young = "Asthma in Younger Adults (Age 18-39)", amputation_diab = "Lower-Extremity Amputation (Diabetes)", pq_overall = "Prevention Quality Overall Composite", pq_acute = "Prevention Quality Acute Composite", pq_chronic = "Prevention Quality Chronic Composite", pq_diabetes = "Prevention Quality Diabetes Composite") %>% mutate(angina = NA)
+
+phosp <- rbind(ph_early, ph_late) %>% arrange(County) %>% rename(county = County, year = Year)
+
+dat <- demo %>% left_join(pm25, by = c("county", "year")) %>% left_join(phosp, by = c("county", "year"))
+# save(dat, file = "data/dat.Rdata")
+rm(list = setdiff(ls(), "dat"))
 ```
+
+
+
+
+
+
