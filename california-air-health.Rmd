@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.align = "center
 
 ```{r Read in data, eval = F}
 rm(list = ls())
-library(tidyverse); library(lubridate); library(stringr)
+library(tidyverse); library(lubridate); library(stringr); library(rgdal)
 
 # read in 2010-2017 California air quality data
 pm25 <- read_csv("data/pm25_annual-days-above-nat-24-hr-stnd.csv", na = "*") %>% group_by(county) %>% summarize(pm2010 = mean(pm2010, na.rm = T), pm2011 = mean(pm2011, na.rm = T), pm2012 = mean(pm2012, na.rm = T), pm2013 = mean(pm2013, na.rm = T), pm2014 = mean(pm2014, na.rm = T), pm2015 = mean(pm2015, na.rm = T), pm2016 = mean(pm2016, na.rm = T), pm2017 = mean(pm2017, na.rm = T)) %>% gather(year, pm25, pm2010:pm2017) %>% mutate(year = as.numeric(str_sub(year, 3, 6))) %>% arrange(county)
@@ -33,6 +33,53 @@ dat <- demo %>% left_join(pm25, by = c("county", "year")) %>% left_join(phosp, b
 # save(dat, file = "data/dat.Rdata")
 rm(list = setdiff(ls(), "dat"))
 ```
+
+```{r CA visualizations}
+rm(list = ls())
+library(tidyverse); library(lubridate); library(stringr); library(rgdal)
+
+load("data/dat.Rdata")
+cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
+plot(cali)
+
+caplot <- function(yr, var) #year: numeric input, var: character input
+{
+  df <- dat %>% filter(year == yr) %>% select(county, var)
+  map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
+  cols <- as.character(cut(map@data[ , var], breaks = quantile(map@data[ , var], seq(0, 1, by = 0.2), na.rm = T), labels = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy")))
+  
+  plot(map, col = "grey77", border = NA, main = paste(var, "by County in", yr))
+  plot(map, col = cols, add = T, border = NA)
+}
+
+pmplot <- function(yr) # special function for PM 2.5 plots
+{
+  df <- dat %>% filter(year == yr) %>% select(county, pm25)
+  map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
+  cols <- as.character(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), labels = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy")))
+  
+  plot(map, col = "grey77", border = NA, main = paste("Days Over National PM 2.5 Standard by County in", yr))
+  plot(map, col = cols, add = T, border = NA)
+}
+```
+
+
+```{r, fig.height = 12, fig.width = 8}
+par(oma = rep(0, 4), mar = c(0.5, 0.5, 0.8, 0.5), mfrow = c(4, 2))
+pmplot(2010)
+pmplot(2011)
+pmplot(2012)
+pmplot(2013)
+pmplot(2014)
+pmplot(2015)
+pmplot(2016)
+pmplot(2017)
+```
+
+I can't do a legend right now, so mint green is 0-3 days over the national PM 2.5 standard, medium green is <3-6, turquoise is <6-10, cornflower blue is <10-20, and navy is <20-46.
+
+
+
 
 
 
