@@ -79,6 +79,85 @@ pmplot(2017)
 I can't do a legend right now, so mint green is 0-3 days over the national PM 2.5 standard, medium green is <3-6, turquoise is <6-10, cornflower blue is <10-20, and navy is <20-46.
 
 
+#manipulating Ruthe's data for ST modeling_XL
+```{r}
+
+#latitude and longitude
+loc = cali@data[,c(5,6,ncol(shape@data)-1,ncol(shape@data))]
+loc$NAME = as.character(loc$NAME)
+names(loc)[1] = "county"
+loc$NAMELSAD = as.character(loc$NAMELSAD)
+
+#xy coordinates using WGS84
+#source: https://rpubs.com/dasaptaerwin/19879
+xy <- as.data.frame(loc[,c(3,4)])
+xy <- as.data.frame(apply(xy,2,function(x){as.numeric(as.character(x))}))
+cord.dec = SpatialPoints(cbind(xy$INTPTLON,-xy$INTPTLAT), 
+                         proj4string=CRS("+proj=longlat"))
+coord <- as.data.frame(spTransform(cord.dec, CRS("+init=epsg:32748")))
+
+#combine latlong and coordinates
+loc.all <- data.frame(loc,x = coord$coords.x1, y = coord$coords.x2)
+
+#merge; county as a factor
+datnew = left_join(dat,loc.all,by = "county") %>% 
+  mutate(ID = factor(county)) %>%
+  rename(lat = INTPTLAT, long = INTPTLON)
+
+#outcome data for all categories
+outcome_data <- datnew %>%  
+  select(-age60_perc,-bachelor_perc,
+         -est.white.percent,-est.black.percent,-pm25)
+
+#Let's say we pick dehydration as an outcome
+#dehydration only, wide format
+#matrix
+outcome_dehy <- outcome_data %>% select(ID,year, dehydration) %>%
+  spread(key = ID,value = dehydration)
+
+outcome_dehydration <- as.matrix(outcome_dehy[,-1],nrow = 8)
+rownames(outcome_dehydration) = c(2010,2011,2012,2013,2014,2015,2016,2017)
+colnames(outcome_dehydration) = unique(datnew$county)
+
+#convarites (non-time-varying): I chose 2015 (this may change later)
+#data.frame
+covariate <- datnew %>% filter(year == 2015)  %>%
+  select(ID,x,y,lat,long,age60_perc,bachelor_perc,
+         est.white.percent,est.black.percent) %>%
+  mutate(type = factor(rep(1,n())))
+
+#check covaraite data is ok
+#stCheckCovars(covariate, ID.unique = character(0)) #ok
+
+#time-varying covariate: pm25
+#matrix
+stcov = datnew %>% select(year,ID,pm25) %>% spread(key = ID,value = pm25)
+stcov <- as.matrix(stcov[,-1],nrow = 8)
+rownames(stcov) = c(2010,2011,2012,2013,2014,2015,2016,2017)
+colnames(stcov) = unique(datnew$county)
+
+#list to create STdata object
+st_dehy <- list(obs = outcome_dehydration, X = covariate,
+               stcov = stcov)
+
+#STdata Object!
+st_dehy_obj <- createSTdata(st_dehy$obs, st_dehy$X, 
+                            SpatioTemporal = list(st_pm2.5 = stcov))
+# plot(st_dehy_obj,"loc")
+# print(st_dehy_obj)
+
+#try to create a STmodel: not working
+LUR <- list(~est.black.percent+age60_perc+bachelor_perc)
+ST <- "pm25"
+locations <- list(coords = c("x","y"), long.lat = c("long", "lat"),others = "type")
+cov.beta <- list(covf = "exp", nugget = FALSE)
+cov.nu <- list(covf = "exp", nugget = ~type, random.effect = FALSE)
+createSTmodel(stobj, LUR = LUR, ST = ST, cov.beta = cov.beta, 
+              cov.nu = cov.nu, locations = locations)
+
+
+```
+
 
 
 
