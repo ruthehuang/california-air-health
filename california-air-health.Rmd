@@ -85,7 +85,7 @@ library("SpatioTemporal")
 library("sp")
 
 #latitude and longitude
-loc = cali@data[,c(5,6,ncol(shape@data)-1,ncol(shape@data))]
+loc = cali@data[,c(5,6,ncol(cali@data)-1,ncol(cali@data))]
 loc$NAME = as.character(loc$NAME)
 names(loc)[1] = "county"
 loc$NAMELSAD = as.character(loc$NAMELSAD)
@@ -149,12 +149,12 @@ st_dehy_obj <- createSTdata(st_dehy$obs, st_dehy$X,
 # print(st_dehy_obj)
 
 #try to create a STmodel: not working
-LUR <- list(~est.black.percent+age60_perc+bachelor_perc)
+LUR <- list(~est.black.percent + age60_perc + bachelor_perc)
 ST <- "pm25"
 locations <- list(coords = c("x","y"), long.lat = c("long", "lat"),others = "type")
 cov.beta <- list(covf = "exp", nugget = FALSE)
 cov.nu <- list(covf = "exp", nugget = ~type, random.effect = FALSE)
-createSTmodel(stobj, LUR = LUR, ST = ST, cov.beta = cov.beta, 
+createSTmodel(st_dehy_obj, LUR = LUR, ST = ST, cov.beta = cov.beta, 
               cov.nu = cov.nu, locations = locations)
 
 
