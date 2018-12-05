@@ -1,0 +1,41 @@
+---
+title: "fit_st_model"
+author: "Emily Scott"
+date: "December 5, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Create object
+st_dehy_obj <- createSTdata(st_dehy$obs, st_dehy$X, 
+                            SpatioTemporal = list(st_pm2.5 = stcov))
+
+# Specify time-constant predictors
+LUR <- list(~est.black.percent + age60_perc + bachelor_perc)
+
+# Specify spatiotemporal predictors
+ST <- "st_pm2.5"
+
+# Save spatiotemporal model
+st_dehy_model <- createSTmodel(st_dehy_obj, LUR = LUR, ST = ST)
+
+# Look at important dimensions
+st_dehy_dim <- loglikeSTdim(st_dehy_model)
+str(st_dehy_dim)
+
+# Store values for optimization
+loglikeSTnames(st_dehy_model, all = FALSE)
+x.init <- data.frame(V1 = c(1,1,1,1,1))
+rownames(x.init) <- loglikeSTnames(st_dehy_model, all = FALSE)
+x.init
+
+
+## NOT WORKING
+st_model_est <- estimate(st_dehy_model, x.init, type = "p", hessian.all=TRUE)
+print(st_model_est)
+```
+
