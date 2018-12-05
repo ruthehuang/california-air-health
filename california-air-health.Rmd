@@ -81,6 +81,8 @@ I can't do a legend right now, so mint green is 0-3 days over the national PM 2.
 
 #manipulating Ruthe's data for ST modeling_XL
 ```{r}
+library("SpatioTemporal")
+library("sp")
 
 #latitude and longitude
 loc = cali@data[,c(5,6,ncol(shape@data)-1,ncol(shape@data))]
