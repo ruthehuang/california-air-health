@@ -9,7 +9,19 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.align = "center")
 ```
 
-## Frisbee is a lickey pupper
+## Motivation and Overview
+
+## Related Work
+
+## Initial Questions
+
+## Data
+
+## Exploratory Data Analysis
+
+## Data Analysis
+
+## Narrative and Summary
 
 ```{r Read in data, eval = F}
 rm(list = ls())
