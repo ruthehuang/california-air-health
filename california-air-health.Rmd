@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.align = "center
 
 ## Motivation and Overview
 
+Wildfires are a natural, annual occurrence in California. Typically, they appear at the end of long, dry summers. Human are a large cause of fires, with people providing the igniting spark in 4 out of 5 fires. 
+
 ## Related Work
 
 ## Initial Questions
