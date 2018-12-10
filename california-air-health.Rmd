@@ -11,9 +11,9 @@ knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.align = "center
 
 ## Motivation and Overview
 
-Wildfires are a natural, annual occurrence in California. Typically, they appear at the end of long, dry summers. Humans are a large cause of fires, with people providing the igniting spark in 4 out of 5 fires. However, climate change has helped California's wildfires more intense, with the warm and dry conditions creating ideal conditions for wildfire. According to the Environmental Protection Agency, the state of California is becoming warmer as a whole; preceding both 2017 and 2018 wildfires were some of the state's highest temperatures in history. The California Environmental Protection Agency found that long-term warming trends -- including the rise in average temperatures and the number of hot days and nights -- have grown in recent decades and are the underlying causes for weather-related incidents like wildfires and droughts.
+Wildfires are a natural, annual occurrence in California. However, climate change has helped California's wildfires more intense, with the warm and dry conditions creating ideal conditions for wildfire. According to the Environmental Protection Agency, the state of California is becoming warmer as a whole; preceding both 2017 and 2018 wildfires were some of the state's highest temperatures in history.
 
-Large fires have become more common in California, as seen in the chart below. Each bar represents a single fire, and the bar height represents the size of areas burned, in acres.
+Predictably, large fires have become more common in California, as seen in the chart below. Each bar represents a single fire, and the bar height represents the size of areas burned, in acres.
 
 ![](https://www.gannett-cdn.com/experiments/usatoday/responsive/2018/ca-wildfires/img/cal-fires-1970-2017.svg)
 
@@ -62,32 +62,79 @@ library(tidyverse); library(lubridate); library(stringr); library(rgdal)
 
 load("data/dat.Rdata")
 cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
-plot(cali)
+cali$NAME <- as.character(cali$NAME)
+# plot(cali)
 
-caplot <- function(yr, var) #year: numeric input, var: character input
+caplot <- function(yr, var, cutoffs = NULL) #year: numeric input, var: character input
 {
   df <- dat %>% filter(year == yr) %>% select(county, var)
   map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
-  cols <- as.character(cut(map@data[ , var], breaks = quantile(map@data[ , var], seq(0, 1, by = 0.2), na.rm = T), labels = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy")))
+  if (length(cutoffs) == 0)
+  {
+    brks <- quantile(map@data[ , var], seq(0, 1, by = 0.2), na.rm = T)
+    mycols <- c("rosybrown1", "palevioletred1", "deeppink1", "magenta3", "purple4")
+  } else {
+    brks <- cutoffs
+    mycols <- c("cornsilk1", "goldenrod1", "darkorange", "firebrick2", "darkred")
+  }
+  cols <- as.character(cut(map@data[ , var], breaks = brks, labels = mycols))
   
-  plot(map, col = "grey77", border = NA, main = paste(var, "by County in", yr))
+  plot(map, col = "grey77", border = NA, main = yr, cex.main = 2)
   plot(map, col = cols, add = T, border = NA)
 }
+
 
 pmplot <- function(yr) # special function for PM 2.5 plots
 {
   df <- dat %>% filter(year == yr) %>% select(county, pm25)
   map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
-  cols <- as.character(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), labels = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy")))
+  cols <- as.character(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T, labels = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy")))
   
-  plot(map, col = "grey77", border = NA, main = paste("Days Over National PM 2.5 Standard by County in", yr))
+  plot(map, col = "grey77", border = NA, main = yr, cex.main = 2)
   plot(map, col = cols, add = T, border = NA)
+  # legend(x = -12890659, y = 4927837, legend = levels(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T)), fill = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy"), cex = 1)
+}
+
+bigplot <- function(var, cut = NULL, omit = F)
+{
+  if (length(cut) == 0)
+  {
+    par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
+    caplot(2010, var)
+    caplot(2011, var)
+    caplot(2012, var)
+    caplot(2013, var)
+    caplot(2014, var)
+    caplot(2015, var)
+    if (omit == F)
+    {
+      caplot(2016, var)
+      caplot(2017, var)
+    }
+    par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
+    plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
+    legend("bottom", legend = c("[0-20th percentile]", "(20-40th percentile]", "(40-60th percentile]", "(60-80th percentile]", "(80-100th percentile]"), fill = c("rosybrown1", "palevioletred1", "deeppink1", "magenta3", "purple4"), xpd = TRUE, horiz = TRUE, inset = c(0, 0), bty = "n", cex = 2)
+  } else {
+    par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
+    caplot(2010, var, cutoffs = cut)
+    caplot(2011, var, cutoffs = cut)
+    caplot(2012, var, cutoffs = cut)
+    caplot(2013, var, cutoffs = cut)
+    caplot(2014, var, cutoffs = cut)
+    caplot(2015, var, cutoffs = cut)
+    caplot(2016, var, cutoffs = cut)
+    caplot(2017, var, cutoffs = cut)
+    par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
+    plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
+    legend("bottom", legend = levels(cut(unlist(dat[ , var]), breaks = cut, include.lowest = T)), fill = c("cornsilk1", "goldenrod1", "darkorange", "firebrick2", "darkred"), xpd = TRUE, horiz = TRUE, inset = c(0, 0), bty = "n", cex = 2)
+  }
 }
 ```
 
+## Days Over National PM 2.5 Standard by County Over Time
 
-```{r, fig.height = 12, fig.width = 8}
-par(oma = rep(0, 4), mar = c(0.5, 0.5, 0.8, 0.5), mfrow = c(4, 2))
+```{r, fig.height = 9, fig.width = 14}
+par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
 pmplot(2010)
 pmplot(2011)
 pmplot(2012)
@@ -96,10 +143,94 @@ pmplot(2014)
 pmplot(2015)
 pmplot(2016)
 pmplot(2017)
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
+legend("bottom", legend = levels(cut(dat$pm25, breaks = c(0, 5, 10, 20, 30, 100), include.lowest = T)), fill = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy"), xpd = TRUE, horiz = TRUE, inset = c(0, 
+    0), bty = "n", cex = 2)
 ```
 
-I can't do a legend right now, so mint green is 0-3 days over the national PM 2.5 standard, medium green is <3-6, turquoise is <6-10, cornflower blue is <10-20, and navy is <20-46.
 
+## Health Outcomes Over Time
+
+### Angina
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("angina", cut = c(0, 10, 20, 30, 45, 65))
+bigplot("angina", omit = T)
+```
+
+*No `angina` data for 2016 and 2017
+
+### Asthma (in Younger Adults)
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("asthma_young", cut = c(0, 10, 20, 30, 45, 125))
+bigplot("asthma_young")
+```
+
+### Asthma/COPD (in Older Adults)
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("asthma_older", cut = c(100, 200, 300, 400, 600, 1000))
+bigplot("asthma_older")
+```
+
+### Pneumonia
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("pneumonia", cut = c(50, 150, 250, 350, 450, 550))
+bigplot("pneumonia")
+```
+
+### Dehydration
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("dehydration", cut = c(30, 80, 100, 150, 200, 320))
+bigplot("dehydration")
+```
+
+### Diabetes (Short-Term Complications)
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("diabetes_st", cut = c(15, 45, 75, 100, 120, 150))
+bigplot("diabetes_st")
+```
+
+### Diabetes (Long-Term Complications)
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("diabetes_lt", cut = c(0, 10, 20, 30, 45, 65))
+bigplot("diabetes_lt")
+```
+
+### Diabetes (Uncontrolled)
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("diabetes_uc", cut = c(20, 60, 100, 140, 160, 230))
+bigplot("diabetes_uc")
+```
+
+### Amputation (from Diabetes)
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("amputation_diab", cut = c(0, 10, 20, 30, 45, 65))
+bigplot("amputation_diab")
+```
+
+### Heart Failure
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("heart_fail", cut = c(120, 200, 300, 400, 500, 600))
+bigplot("heart_fail")
+```
+
+### Hypertension
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("hypertension", cut = c(0, 10, 25, 40, 60, 120))
+bigplot("hypertension")
+```
+
+### Perforated Appendix
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("perf_appendix", cut = c(15, 25, 35, 50, 100, 700))
+bigplot("perf_appendix")
+```
+
+## UTI
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("uti", cut = c(35, 100, 125, 150, 200, 270))
+bigplot("uti")
+```
 
 #manipulating Ruthe's data for ST modeling_XL
 ```{r, eval = F}
