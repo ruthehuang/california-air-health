@@ -11,7 +11,15 @@ knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.align = "center
 
 ## Motivation and Overview
 
-Wildfires are a natural, annual occurrence in California. Typically, they appear at the end of long, dry summers. Human are a large cause of fires, with people providing the igniting spark in 4 out of 5 fires. 
+Wildfires are a natural, annual occurrence in California. Typically, they appear at the end of long, dry summers. Humans are a large cause of fires, with people providing the igniting spark in 4 out of 5 fires. However, climate change has helped California's wildfires more intense, with the warm and dry conditions creating ideal conditions for wildfire. According to the Environmental Protection Agency, the state of California is becoming warmer as a whole; preceding both 2017 and 2018 wildfires were some of the state's highest temperatures in history. The California Environmental Protection Agency found that long-term warming trends -- including the rise in average temperatures and the number of hot days and nights -- have grown in recent decades and are the underlying causes for weather-related incidents like wildfires and droughts.
+
+Large fires have become more common in California, as seen in the chart below. Each bar represents a single fire, and the bar height represents the size of areas burned, in acres.
+
+![](https://www.gannett-cdn.com/experiments/usatoday/responsive/2018/ca-wildfires/img/cal-fires-1970-2017.svg)
+
+Fires now tend to be associated with more human risk due to urban expansion into high-risk fire zones. California's population increasingly tends to live in proximity to high-risk fire corridors; as a result, wildfires more frequently devastate settled areas. The number of properties at risk of wildfire threat is estimated by Villanova University to be nearly 7 million, a more than 1000% increase in the number of homes and developed land in areas prone to wildfires since 1940. California's 2018 Camp Fire completely destroyed Paradise, CA, the second-largest city in Butte County with a population of about 26,682. A 2017 Verisk risk analysis puts 15% -- or over 2 million -- of California's homes in high or extremely high wildfire risk zones and another 12% in moderate risk areas; this means more than a quarter of the state's homes are at moderate to extremely high risk of being damaged in a wildfire.
+
+The extent of risk undeniably poses a huge task for California firefighters. Historically, Southern California firefighters were able to depend on help from Northern California partners, since Northern California would have already started to see rainfall or even snow. However with statewide climate change, both northern and southern California fires continue to be disastrous and necessitate abundant resources.
 
 ## Related Work
 
@@ -94,7 +102,7 @@ I can't do a legend right now, so mint green is 0-3 days over the national PM 2.
 
 
 #manipulating Ruthe's data for ST modeling_XL
-```{r}
+```{r, eval = F}
 library("SpatioTemporal")
 library("sp")
 
