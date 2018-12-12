@@ -1,0 +1,183 @@
+---
+title: "GAM and CAR"
+author: "Xinye Li"
+date: "12/11/2018"
+output: html_document
+---
+
+##Please run Ruthe's "california-air-health" first!
+
+
+```{r}
+# prepare data
+library("SpatioTemporal"); library("sp")
+
+#1. latitude and longitude
+loc = cali@data[,c(5,6,ncol(cali@data)-1,ncol(cali@data))]
+loc$NAME = as.character(loc$NAME)
+names(loc)[1] = "county"
+loc$NAMELSAD = as.character(loc$NAMELSAD)
+
+#2. xy coordinates using WGS84, just in case
+# source: https://rpubs.com/dasaptaerwin/19879
+xy <- as.data.frame(loc[,c(3,4)])
+xy <- as.data.frame(apply(xy,2,function(x){as.numeric(as.character(x))}))
+cord.dec = SpatialPoints(cbind(xy$INTPTLON,-xy$INTPTLAT), 
+                         proj4string=CRS("+proj=longlat"))
+coord <- as.data.frame(spTransform(cord.dec, CRS("+init=epsg:32748")))
+
+#3. combine latlong and coordinates
+loc.all <- data.frame(loc,x = coord$coords.x1, y = coord$coords.x2)
+
+
+#4. merge; convert lat and long to numeric 
+# this is the data used for GAM, but not for CAR model
+
+datnew <- left_join(dat,loc.all,by = "county") %>% 
+  mutate(lat = as.numeric(as.character(INTPTLAT)),
+         long = as.numeric(as.character(INTPTLON))) 
+
+
+```
+
+
+
+##GAM: test whether the trend is linear - looks like spatial trend is non-linear but temporal fail to be non-linear
+
+** 1. Spatial trend: ** 
+-Non-linear spatial trend detected for PM2.5 (from pvalue in "Approximate significance of smooth terms")
+
+-Outcome(s)
+
+```{r}
+# load mgcv package. We will be using "gam" function
+library("mgcv")
+
+#1. test the spatial trend of PM2.5
+gam_pm25_space <- gam(pm25~s(lat,long),data = datnew,family = gaussian)
+summary.gam(gam_pm25_space)$s.table
+
+
+#2. test the spatial trend of outcome: wittern as a function
+# default data set: "datnew"; input an outcome
+# !need to provide options of outcomes in the app
+spatial.trend <- function(data = datnew, y) {
+  
+  # check whether input outcome exists
+  if (! deparse(substitute(y)) %in% names(datnew)[8:24]) 
+  {print("Outcome does not exist")}
+  
+  #GAM
+  gam_outcome_space <- gam(y~s(lat,long),data = datnew,family = gaussian)
+  test_linear_trend <- summary(gam_outcome_space)$s.table
+  
+  #return smoothness results
+  return(test_linear_trend)
+  
+}
+
+# test
+spatial.trend(pq_acute)
+spatial.trend(diabetes_st)
+```
+
+**Temporal trend:**
+Since we only have 8 unique time points which fails to meet the default requirement of 10 knots, it is necessary to choose number of knots for the spline. We used the GCV, an analog of AIC, to determine the knots that minimizes the amount of information loss. 
+```{r message = FAlSE, warning= FALSE}
+#0. choose knots
+GCV <- c() 
+for (i in 1:8){ # we have at most 8 knots in spline
+  tmp_gam_pm25Time <- gam(pm25~s(year, k = i),data = dat,family = gaussian)
+  GCV[i] <- summary(tmp_gam_pm25Time)$sp.criterion
+}
+
+# knot = 8, we overfit the model (but we fail to detect non-linear trend)
+kn = which.min(GCV)
+
+#1. test the temporal trend of PM2.5
+gam_pm25_time <- gam(pm25~s(year, k = kn),data = datnew,family = gaussian)
+summary.gam(gam_pm25_time)$s.table
+
+
+#2. test the spatial trend of outcome: wittern as a function
+temporal.trend <- function(data = datnew, y) {
+  
+  # check whether input outcome exists
+  if (! deparse(substitute(y)) %in% names(datnew)[8:24]) 
+  {print("Outcome does not exist")}
+  
+  #GAM
+  gam_outcome_time <- gam(y~s(year, k = 8),data = datnew,family = gaussian)
+  test_linear_trend <- summary(gam_outcome_time)$s.table
+  
+  #return smoothness results
+  return(test_linear_trend)
+  
+}
+
+# test
+temporal.trend(dehydration)
+temporal.trend(asthma_older)
+temporal.trend(diabetes_st)
+```
+
+##CAR model 
+**1. Spatial autocorrelation: Moran's I index**
+-PM2.5: Spatially autocorrelated
+-Outcomes: All but Angina and Perforated Appendix are spatially autocorrelated
+
+
+```{r}
+#0. test the existence of spatial auto-correlation: Moran's I
+ca.dists <- as.matrix(dist(cbind(datnew$long, datnew$lat)))
+ca.dists.inv <- 1/ca.dists
+diag(ca.dists.inv) <- 0
+ca.dists.inv[is.infinite(ca.dists.inv)] <- 0
+
+moransI_pval <- c()
+for (i in 1:17){
+  moransI_pval[i] <- Moran.I(data.frame(datnew)[,7+i],
+                             ca.dists.inv,na.rm = TRUE)$p.value 
+}
+
+# most of the outcomes are spatially autocorrelated except for 
+names(datnew)[c(8:24)][which(moransI_pval > .05)]
+
+#pm25
+Moran.I(data.frame(datnew)[,"pm25"],ca.dists.inv,na.rm = TRUE)$p.value 
+```
+
+**CAR model**
+The conditional autoregressive (CAR) model accounts for the autocorrelation from space and time, then models the residuals and gives overall estimates (not county-specific) for predictors of interest.
+
+```{r}
+#1. prepare data for CAR model: need to delete counties with NAs in pm25
+dat_car <- datnew %>% filter(!county %in% c("Yuba","El Dorado"))
+
+#2. W matrix with binary elements that indicate shared border between counties
+W.nb <-poly2nb(cali)
+W.list <- nb2listw(W.nb, style = "B")
+W <- nb2mat(W.nb, style = "B")
+rownames(W) = cali@data$NAME;colnames(W) = cali@data$NAME
+
+# we have limited counties
+index = c(which(is.na(match(loc.all$county,datnew$county))))
+W <- W[-index,-index]
+
+# Shasta d.n. have any neighbor -> manually inpute the closet neighbor as 1
+# make sure W is symmetric
+W[12,28] <- 1; W[28,12] <- 1;W[12,14] <- 1;W[14,12] <- 1
+
+#3. Impute missing covariate 
+dat[which(is.na(dat$pm25)),c("pm25")] <- c(1,0,0,1.61,10,1,0,1,1,1,0,0,.5,.5,3.5,4,1)
+
+#4. CAR model: expect a function later
+fitst_adapt <- ST.CARadaptive(diabetes_lt~age60_perc + est.black.percent +
+                                bachelor_perc + year +pm25, 
+                              family = "gaussian",
+                              data = dat, W = W, burnin = 500, n.sample = 20500,
+                              thin = 10)
+fitst_adapt$summary.results
+```
+
+
