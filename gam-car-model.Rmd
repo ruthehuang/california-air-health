@@ -42,84 +42,62 @@ datnew <- left_join(dat,loc.all,by = "county") %>%
 
 
 
-##GAM: test whether the trend is linear - looks like spatial trend is non-linear but temporal fail to be non-linear
+##GAM: test whether the trend is linear
 
-** 1. Spatial trend: ** 
--Non-linear spatial trend detected for PM2.5 (from pvalue in "Approximate significance of smooth terms")
+** 1. PM2.5 ** 
+-Non-linear spatial and temporal trends detected for PM2.5 (from pvalue in "Approximate significance of smooth terms")
 
--Outcome(s)
+
 
 ```{r}
+#EDA: not much change for many counties
+datnew %>% group_by(year, county) %>% filter(!is.na(pm25)) %>%
+  ggplot(aes(x = year, y = pm25)) +
+  geom_smooth(method = "gam") +
+  facet_wrap(.~county,scales="free_y") +
+  theme_bw()
+
+
 # load mgcv package. We will be using "gam" function
 library("mgcv")
 
-#1. test the spatial trend of PM2.5
-gam_pm25_space <- gam(pm25~s(lat,long),data = datnew,family = gaussian)
-summary.gam(gam_pm25_space)$s.table
+# test the spatio-temporal trend of PM2.5
+gam_pm25_spacetime <- gam(pm25~s(lat,long) + s(year, k = 5),
+                          data = datnew,family = gaussian)
+summary.gam(gam_pm25_spacetime)$s.table
 
 
-#2. test the spatial trend of outcome: wittern as a function
-# default data set: "datnew"; input an outcome
-# !need to provide options of outcomes in the app
-spatial.trend <- function(data = datnew, y) {
+```
+
+**2. Outcomes**
+```{r}
+# test the spatio-temporal trend of outcome: wittern as a function
+# default data set: "datnew"; input an outcome, y is a character
+
+st.trend <- function(y,data = datnew) {
   
   # check whether input outcome exists
-  if (! deparse(substitute(y)) %in% names(datnew)[8:24]) 
+  if (! y %in% names(datnew)[8:24]) 
   {print("Outcome does not exist")}
   
+  else{
+    y = datnew[,y]
   #GAM
-  gam_outcome_space <- gam(y~s(lat,long),data = datnew,family = gaussian)
-  test_linear_trend <- summary(gam_outcome_space)$s.table
+  gam_outcome_spacetime <- gam(y~s(lat,long)+s(year, k = 5),
+                               data = datnew,family = gaussian)
+  test_linear_trend <- summary(gam_outcome_spacetime)$s.table
   
+
   #return smoothness results
-  return(test_linear_trend)
+  return(test_linear_trend)}
   
 }
 
 # test
-spatial.trend(pq_acute)
-spatial.trend(diabetes_st)
+st.trend("pq_acute")
+st.trend("ds")
 ```
 
-**Temporal trend:**
-Since we only have 8 unique time points which fails to meet the default requirement of 10 knots, it is necessary to choose number of knots for the spline. We used the GCV, an analog of AIC, to determine the knots that minimizes the amount of information loss. 
-```{r message = FAlSE, warning= FALSE}
-#0. choose knots
-GCV <- c() 
-for (i in 1:8){ # we have at most 8 knots in spline
-  tmp_gam_pm25Time <- gam(pm25~s(year, k = i),data = dat,family = gaussian)
-  GCV[i] <- summary(tmp_gam_pm25Time)$sp.criterion
-}
-
-# knot = 8, we overfit the model (but we fail to detect non-linear trend)
-kn = which.min(GCV)
-
-#1. test the temporal trend of PM2.5
-gam_pm25_time <- gam(pm25~s(year, k = kn),data = datnew,family = gaussian)
-summary.gam(gam_pm25_time)$s.table
-
-
-#2. test the spatial trend of outcome: wittern as a function
-temporal.trend <- function(data = datnew, y) {
-  
-  # check whether input outcome exists
-  if (! deparse(substitute(y)) %in% names(datnew)[8:24]) 
-  {print("Outcome does not exist")}
-  
-  #GAM
-  gam_outcome_time <- gam(y~s(year, k = 8),data = datnew,family = gaussian)
-  test_linear_trend <- summary(gam_outcome_time)$s.table
-  
-  #return smoothness results
-  return(test_linear_trend)
-  
-}
-
-# test
-temporal.trend(dehydration)
-temporal.trend(asthma_older)
-temporal.trend(diabetes_st)
-```
 
 ##CAR model 
 **1. Spatial autocorrelation: Moran's I index**
@@ -147,7 +125,7 @@ names(datnew)[c(8:24)][which(moransI_pval > .05)]
 Moran.I(data.frame(datnew)[,"pm25"],ca.dists.inv,na.rm = TRUE)$p.value 
 ```
 
-**CAR model**
+**2. CAR model**
 The conditional autoregressive (CAR) model accounts for the autocorrelation from space and time, then models the residuals and gives overall estimates (not county-specific) for predictors of interest.
 
 ```{r}
