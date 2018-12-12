@@ -53,8 +53,13 @@ ph_late <- phosp %>% filter(Year >= 2016) %>% group_by(County, Year) %>% select(
 
 phosp <- rbind(ph_early, ph_late) %>% arrange(County) %>% rename(county = County, year = Year)
 
+# label counties by clustering algorithm
 dat <- demo %>% left_join(pm25, by = c("county", "year")) %>% left_join(phosp, by = c("county", "year")) %>% mutate(region = NA, region = replace(region, county %in% c("Del Norte", "Humboldt", "Mendocino", "Lake", "Siskiyou", "Trinity", "Shasta", "Tehema", "Butte", "Yuba",
 "Sacramento", "Modoc", "Lassen"), "northern"), region = replace(region, county %in% c("Sonoma", "Marin", "Solano", "Napa", "Yolo", "Contra Costa", "Alameda", "San Mateo", "Santa Clara", "Santa Cruz", "San Benito", "Monterey", "San Luis Obispo", "Santa Barbara", "Ventura", "Orange", "San Diego", "Riverside", "Sierra", "Nevada", "Placer", "El Dorado", "Amador", "Mono"), "coastal"), region = replace(region, county %in% c("Alpine", "Calaveras", "Tuolumne", "Mariposa", "Inyo"), "motherlode"), region = replace(region, county %in% c("Glenn", "Colusa", "Sutter", "San Joaquin", "Stanislaus", "Merced", "Madera", "Fresno", "Kings", "Tulare", "Kern", "Los Angeles", "San Bernardino"), "farm"), region = replace(region, county == "San Francisco", "sanfrancisco"), region = replace(region, county == "Imperial", "imperial"))
+
+# # label counties by CDSS groups
+# dat <- demo %>% left_join(pm25, by = c("county", "year")) %>% left_join(phosp, by = c("county", "year")) %>% mutate(region = NA, region = replace(region, county %in% c("Alameda", "Contra Costa", "Marin", "Napa", "San Francisco", "San Mateo", "Santa Clara", "Santa Cruz", "Solano", "Sonoma"), "bayarea"), region = replace(region, county %in% c("Orange", "Riverside", "San Bernardino", "San Diego", "Santa Barbara", "Ventura"), "socal"), region = replace(region, county == "Los Angeles", "losangeles"), region = replace(region, county %in% c("Fresno", "Imperial", "Kern", "Kings", "Madera", "Merced", "Monterey", "San Benito", "San Joaquin", "San Luis Obispo", "Stanislaus", "Tulare"), "csfarm"), region = replace(region, county %in% c("Alpine", "Amador", "Butte", "Calaveras", "Del Norte", "Glenn", "Humboldt", "Inyo", "Lake", "Lassen", "Mariposa", "Mendocino", "Modoc", "Mono", "Nevada", "Plumas", "Shasta", "Sierra", "Siskiyou", "Tehama", "Trinity", "Tuolumne"), "nmountain"), region = replace(region, county %in% c("Colusa", "El Dorado", "Placer", "Sacramento", "Sutter", "Yolo", "Yuba"), "centralvalley"))
+
 # save(dat, file = "data/dat.R")
 rm(list = setdiff(ls(), "dat"))
 ```
