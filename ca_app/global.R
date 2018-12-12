@@ -21,11 +21,11 @@ caplot <- function(yr, var, cutoffs = NULL) #year: numeric input, var: character
   
   plot(map, col = "grey77", border = NA, main = yr, cex.main = 1.5)
   plot(map, col = cols, add = T, border = NA)
-  legend("bottom", legend = levels(cut(unlist(df[ , var]), breaks = brks, include.lowest = T)), fill = mycols, horiz = TRUE, bty = "n", cex = 1, xpd = T, inset = c(0, -0.05))
+  legend("bottom", legend = levels(cut(unlist(df[ , var]), breaks = brks, include.lowest = T)), title = "Rate (per 100,000 people at risk)", fill = mycols, horiz = TRUE, bty = "n", cex = 1, xpd = T, inset = c(0, -0.05))
 }
 
 # PM 2.5 plotting function
-pmplot <- function(yr) # special function for PM 2.5 plots
+pmplot <- function(yr, legend = T) # special function for PM 2.5 plots
 {
   par(oma = c(3, 0, 0, 0), mar = c(1, 0.5, 1.5, 0.5))
   df <- dat %>% filter(year == yr) %>% select(county, pm25)
@@ -34,7 +34,10 @@ pmplot <- function(yr) # special function for PM 2.5 plots
 
   plot(map, col = "grey77", border = NA, main = yr, cex.main = 1.5)
   plot(map, col = cols, add = T, border = NA)
-  legend("bottom", legend = levels(cut(unlist(df[ , "pm25"]), breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T)), fill = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy"), horiz = TRUE, bty = "n", cex = 1, xpd = T, inset = c(0, -0.05))
+  if (legend = T)
+  {
+    legend("bottom", legend = levels(cut(unlist(df[ , "pm25"]), breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T)), fill = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy"), title = "Annual Days over National PM 2.5 Level", horiz = TRUE, bty = "n", cex = 1, xpd = T, inset = c(0, -0.05)) 
+  }
 }
 
 # dictionary of cutoffs for color-coding
