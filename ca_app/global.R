@@ -32,7 +32,7 @@ pmplot <- function(yr) # special function for PM 2.5 plots
   map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
   cols <- as.character(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T, labels = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy")))
 
-  plot(map, col = "grey77", border = NA, main = yr, cex.main = 1)
+  plot(map, col = "grey77", border = NA, main = yr, cex.main = 1.5)
   plot(map, col = cols, add = T, border = NA)
   legend("bottom", legend = levels(cut(unlist(df[ , "pm25"]), breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T)), fill = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy"), horiz = TRUE, bty = "n", cex = 1, xpd = T, inset = c(0, -0.05))
 }
