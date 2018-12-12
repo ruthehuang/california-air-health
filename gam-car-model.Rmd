@@ -45,7 +45,7 @@ datnew <- left_join(dat,loc.all,by = "county") %>%
 ##GAM: test whether the trend is linear
 
 ** 1. PM2.5 ** 
--Non-linear spatial and temporal trends detected for PM2.5 (from pvalue in "Approximate significance of smooth terms")
+-Non-linear spatial and temporal trends detected for PM 2.5 (from pvalue in "Approximate significance of smooth terms")
 
 
 
@@ -75,7 +75,7 @@ summary.gam(gam_pm25_spacetime)$s.table
 # default data set: "datnew"; input an outcome, y is a character
 
 st.trend <- function(y,data = datnew) {
-  
+  require("mgcv");require("dplyr")
   # check whether input outcome exists
   if (! y %in% names(datnew)[8:24]) 
   {print("Outcome does not exist")}
@@ -106,6 +106,7 @@ st.trend("ds")
 
 
 ```{r}
+library("ape")
 #0. test the existence of spatial auto-correlation: Moran's I
 ca.dists <- as.matrix(dist(cbind(datnew$long, datnew$lat)))
 ca.dists.inv <- 1/ca.dists
@@ -128,7 +129,9 @@ Moran.I(data.frame(datnew)[,"pm25"],ca.dists.inv,na.rm = TRUE)$p.value
 **2. CAR model**
 The conditional autoregressive (CAR) model accounts for the autocorrelation from space and time, then models the residuals and gives overall estimates (not county-specific) for predictors of interest.
 
-```{r}
+```{r message=FALSE,warning=FALSE}
+#0. load library
+library("spdep"); library("CARBayesST")
 #1. prepare data for CAR model: need to delete counties with NAs in pm25
 dat_car <- datnew %>% filter(!county %in% c("Yuba","El Dorado"))
 
@@ -139,7 +142,7 @@ W <- nb2mat(W.nb, style = "B")
 rownames(W) = cali@data$NAME;colnames(W) = cali@data$NAME
 
 # we have limited counties
-index = c(which(is.na(match(loc.all$county,datnew$county))))
+index = c(which(is.na(match(loc.all$county,dat_car$county))))
 W <- W[-index,-index]
 
 # Shasta d.n. have any neighbor -> manually inpute the closet neighbor as 1
@@ -147,15 +150,49 @@ W <- W[-index,-index]
 W[12,28] <- 1; W[28,12] <- 1;W[12,14] <- 1;W[14,12] <- 1
 
 #3. Impute missing covariate 
-dat[which(is.na(dat$pm25)),c("pm25")] <- c(1,0,0,1.61,10,1,0,1,1,1,0,0,.5,.5,3.5,4,1)
+dat_car[which(is.na(dat_car$pm25)),c("pm25")] <- c(1,0,0,1.61,10,1,0,1,1,1,0,0,.5,.5,3.5,4,1)
 
-#4. CAR model: expect a function later
-fitst_adapt <- ST.CARadaptive(diabetes_lt~age60_perc + est.black.percent +
-                                bachelor_perc + year +pm25, 
-                              family = "gaussian",
-                              data = dat, W = W, burnin = 500, n.sample = 20500,
-                              thin = 10)
-fitst_adapt$summary.results
+#4. CAR model
+
+# the function "car.model" takes an outcome name (character) and return the summary that includes coefficient estimate and credible interval
+
+# default data: dat_car
+car.model <- function(y,data = dat_car){
+  require("knitr");require("CARBayes");require("dplyr")
+  if (! y %in% names(dat_car)[8:24]) 
+  {print("Outcome does not exist")}
+  else{
+    y2 = pull(dat_car[,y])
+    
+    dat_car_copy <- data.frame(dat_car) %>% 
+      mutate(outcome_interest = y2) %>%
+      dplyr::select(outcome_interest,year,age60_perc,est.black.percent,
+             bachelor_perc,pm25)
+    
+    fitst_adapt <- ST.CARadaptive(outcome_interest~age60_perc + 
+                                    est.black.percent +
+                                    bachelor_perc + year +pm25, 
+                                  family = "gaussian",
+                                  data = dat_car_copy, W = W, burnin = 500, 
+                                  n.sample = 50500,
+                                  thin = 10)
+    #fitst_adapt$summary.results[c(2:5),c(1,2,3)]
+    
+    point_estimate <- unname(round(fitst_adapt$summary.results[c(2:4),1],2))
+    lb <- round(fitst_adapt$summary.results[c(2:4),2],2)
+    ub <- round(fitst_adapt$summary.results[c(2:4),3],2)
+    CI <- noquote(paste("(",lb,",",ub,")",sep = ""))
+    var_name <- c("Age>60 (%)", "Black (%)", ">Bachelor (%)")
+    model_summary <- cbind(var_name, point_estimate, CI)
+    colnames(model_summary) <- c("","Estimate","95% Credible Interval")
+    tb <- kable(model_summary)
+    return(tb)
+  }
+}
+
+car.model("diabetes_lt")
+
+
 ```
 
 
