@@ -32,46 +32,13 @@ pmplot <- function(yr) # special function for PM 2.5 plots
   map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
   cols <- as.character(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T, labels = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy")))
 
-  plot(map, col = "grey77", border = NA, main = yr, cex.main = 2)
+  plot(map, col = "grey77", border = NA, main = yr, cex.main = 1)
   plot(map, col = cols, add = T, border = NA)
   legend("bottom", legend = levels(cut(unlist(df[ , "pm25"]), breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T)), fill = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy"), horiz = TRUE, bty = "n", cex = 1, xpd = T, inset = c(0, -0.05))
 }
 
+# dictionary of cutoffs for color-coding
+cutoffs <- list(angina = c(0, 10, 20, 30, 45, 65), asthma_young = c(0, 10, 20, 30, 45, 125), asthma_older = c(100, 250, 400, 600, 800, 1000), pneumonia = c(50, 100, 200, 300, 400, 550), dehydration = c(30, 80, 100, 150, 200, 320), diabetes_st = c(15, 45, 75, 100, 120, 150), diabetes_lt = c(20, 50, 80, 100, 150, 230), diabetes_uc = c(0, 5, 15, 30, 60, 100), amputation_diab = c(0, 10, 20, 30, 45, 65), heart_fail = c(120, 200, 300, 400, 500, 600), hypertension = c(0, 10, 25, 40, 60, 120), perf_appendix = c(15, 35, 50, 100, 500, 700), uti = c(35, 100, 125, 150, 200, 270))
 
 
 
-# Arrange maps into 8
-bigplot <- function(var, cut = NULL, omit = F)
-{
-  if (length(cut) == 0)
-  {
-    par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
-    caplot(2010, var)
-    caplot(2011, var)
-    caplot(2012, var)
-    caplot(2013, var)
-    caplot(2014, var)
-    caplot(2015, var)
-    if (omit == F)
-    {
-      caplot(2016, var)
-      caplot(2017, var)
-    }
-    par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
-    plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
-    legend("bottom", legend = c("[0-20th percentile]", "(20-40th percentile]", "(40-60th percentile]", "(60-80th percentile]", "(80-100th percentile]"), fill = c("rosybrown1", "palevioletred1", "deeppink1", "magenta3", "purple4"), xpd = TRUE, horiz = TRUE, inset = c(0, 0), bty = "n", cex = 2)
-  } else {
-    par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
-    caplot(2010, var, cutoffs = cut)
-    caplot(2011, var, cutoffs = cut)
-    caplot(2012, var, cutoffs = cut)
-    caplot(2013, var, cutoffs = cut)
-    caplot(2014, var, cutoffs = cut)
-    caplot(2015, var, cutoffs = cut)
-    caplot(2016, var, cutoffs = cut)
-    caplot(2017, var, cutoffs = cut)
-    par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
-    plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
-    legend("bottom", legend = levels(cut(unlist(dat[ , var]), breaks = cut, include.lowest = T)), fill = c("cornsilk1", "goldenrod1", "darkorange", "firebrick2", "darkred"), xpd = TRUE, horiz = TRUE, inset = c(0, 0), bty = "n", cex = 2)
-  }
-}
