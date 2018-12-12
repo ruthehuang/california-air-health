@@ -52,7 +52,7 @@ ph_late <- phosp %>% filter(Year >= 2016) %>% group_by(County, Year) %>% select(
 phosp <- rbind(ph_early, ph_late) %>% arrange(County) %>% rename(county = County, year = Year)
 
 dat <- demo %>% left_join(pm25, by = c("county", "year")) %>% left_join(phosp, by = c("county", "year"))
-# save(dat, file = "data/dat.Rdata")
+# save(dat, file = "data/dat.R")
 rm(list = setdiff(ls(), "dat"))
 ```
 
