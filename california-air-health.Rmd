@@ -23,6 +23,8 @@ The extent of risk undeniably poses a huge task for California firefighters. His
 
 ## Related Work
 
+A 2006 study by Dominici, Peng, and Bell showed that short-term exposure to $\text{PM}_{2.5}$ increases the risk for hospital admission for cardiovascular and respiratory diseases. Specifically, there was a short-term increase in hospital admission rates associated with $\text{PM}_{2.5}$ 
+
 ## Initial Questions
 
 ## Data
@@ -31,7 +33,7 @@ The extent of risk undeniably poses a huge task for California firefighters. His
 
 ## Data Analysis
 
-## Narrative and Summary
+## Results and Summary
 
 ```{r Read in data, eval = F}
 rm(list = ls())
@@ -51,7 +53,8 @@ ph_late <- phosp %>% filter(Year >= 2016) %>% group_by(County, Year) %>% select(
 
 phosp <- rbind(ph_early, ph_late) %>% arrange(County) %>% rename(county = County, year = Year)
 
-dat <- demo %>% left_join(pm25, by = c("county", "year")) %>% left_join(phosp, by = c("county", "year"))
+dat <- demo %>% left_join(pm25, by = c("county", "year")) %>% left_join(phosp, by = c("county", "year")) %>% mutate(region = NA, region = replace(region, county %in% c("Del Norte", "Humboldt", "Mendocino", "Lake", "Siskiyou", "Trinity", "Shasta", "Tehema", "Butte", "Yuba",
+"Sacramento", "Modoc", "Lassen"), "northern"), region = replace(region, county %in% c("Sonoma", "Marin", "Solano", "Napa", "Yolo", "Contra Costa", "Alameda", "San Mateo", "Santa Clara", "Santa Cruz", "San Benito", "Monterey", "San Luis Obispo", "Santa Barbara", "Ventura", "Orange", "San Diego", "Riverside", "Sierra", "Nevada", "Placer", "El Dorado", "Amador", "Mono"), "coastal"), region = replace(region, county %in% c("Alpine", "Calaveras", "Tuolumne", "Mariposa", "Inyo"), "motherlode"), region = replace(region, county %in% c("Glenn", "Colusa", "Sutter", "San Joaquin", "Stanislaus", "Merced", "Madera", "Fresno", "Kings", "Tulare", "Kern", "Los Angeles", "San Bernardino"), "farm"), region = replace(region, county == "San Francisco", "sanfrancisco"), region = replace(region, county == "Imperial", "imperial"))
 # save(dat, file = "data/dat.R")
 rm(list = setdiff(ls(), "dat"))
 ```
@@ -131,7 +134,7 @@ bigplot <- function(var, cut = NULL, omit = F)
 }
 ```
 
-## Days Over National PM 2.5 Standard by County Over Time
+## Days Over National $\text{PM}_{2.5}$ Standard by County Over Time
 
 ```{r, fig.height = 9, fig.width = 14}
 par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
