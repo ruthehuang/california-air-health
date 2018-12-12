@@ -66,7 +66,7 @@ shinyUI(
                   column(width = 6,
                          box(title = h4("Health Outcomes by County", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("omap"))),
                   column(width = 6,
-                         box(title = h4("Annual Days Over National PM 2.5 Level", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("pmmap")))
+                         box(title = h4("PM 2.5 Levels", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("pmmap")))
                 ),
                 fluidRow(
                   column(width = 12,
@@ -78,7 +78,7 @@ shinyUI(
                   column(width = 4,
                          box(title = h4("Health Outcomes by County", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, imageOutput("omap_cont"))),
                   column(width = 8,
-                         box(title = h4("PM 2.5 Levels", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, imageOutput("pmmap_cont")))
+                         box(title = h4("PM 2.5 Levels", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("pmmap_big")))
                 )
         )
       ))
