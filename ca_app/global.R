@@ -1,12 +1,13 @@
-library(shiny); library(shinydashboard); library(dplyr); library(rgdal); library(animation)
+library(shiny); library(shinydashboard); library(dplyr); library(rgdal); library(animation); library(rlist)
 
-dat <- load("data/dat.Rdata")
+load("data/dat.R")
 cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
 
 # outcome plotting function
 caplot <- function(yr, var, cutoffs = NULL) #year: numeric input, var: character input
 {
-  df <- dat %>% filter(year == yr) %>% select(county, var)
+  par(oma = c(3, 0, 0, 0), mar = c(1, 0.5, 1.5, 0.5))
+  df <- dat %>% filter(year == yr) %>% select_("county", var)
   map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
   if (length(cutoffs) == 0)
   {
@@ -18,21 +19,26 @@ caplot <- function(yr, var, cutoffs = NULL) #year: numeric input, var: character
   }
   cols <- as.character(cut(map@data[ , var], breaks = brks, labels = mycols))
   
-  plot(map, col = "grey77", border = NA, main = yr, cex.main = 2)
+  plot(map, col = "grey77", border = NA, main = yr, cex.main = 1.5)
   plot(map, col = cols, add = T, border = NA)
+  legend("bottom", legend = levels(cut(unlist(df[ , var]), breaks = brks, include.lowest = T)), fill = mycols, horiz = TRUE, bty = "n", cex = 1, xpd = T, inset = c(0, -0.05))
 }
 
 # PM 2.5 plotting function
 pmplot <- function(yr) # special function for PM 2.5 plots
 {
+  par(oma = c(3, 0, 0, 0), mar = c(1, 0.5, 1.5, 0.5))
   df <- dat %>% filter(year == yr) %>% select(county, pm25)
   map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
   cols <- as.character(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T, labels = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy")))
-  
+
   plot(map, col = "grey77", border = NA, main = yr, cex.main = 2)
   plot(map, col = cols, add = T, border = NA)
-  # legend(x = -12890659, y = 4927837, legend = levels(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T)), fill = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy"), cex = 1)
+  legend("bottom", legend = levels(cut(unlist(df[ , "pm25"]), breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T)), fill = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy"), horiz = TRUE, bty = "n", cex = 1, xpd = T, inset = c(0, -0.05))
 }
+
+
+
 
 # Arrange maps into 8
 bigplot <- function(var, cut = NULL, omit = F)
