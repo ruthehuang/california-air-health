@@ -1,14 +1,14 @@
 ---
 title: "GAM and CAR"
 author: "Xinye Li"
-date: "12/11/2018"
+date: "12/12/2018"
 output: html_document
 ---
 
 ##Please run Ruthe's "california-air-health" first!
 
 
-```{r}
+```{r message = FALSE, warning=FALSE}
 # prepare data
 library("SpatioTemporal"); library("sp")
 
@@ -49,11 +49,11 @@ datnew <- left_join(dat,loc.all,by = "county") %>%
 
 
 
-```{r}
-#EDA: not much change for many counties
-datnew %>% group_by(year, county) %>% filter(!is.na(pm25)) %>%
+```{r message = FALSE,warning = FALSE}
+# EDA: temporal trend in each county
+plot_time <- datnew %>% group_by(year, county) %>% filter(!is.na(pm25)) %>%
   ggplot(aes(x = year, y = pm25)) +
-  geom_smooth(method = "gam") +
+  geom_smooth(method = "gam",formula = y~s(x,k = 5)) +
   facet_wrap(.~county,scales="free_y") +
   theme_bw()
 
