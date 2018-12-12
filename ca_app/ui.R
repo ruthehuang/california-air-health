@@ -15,8 +15,8 @@ shinyUI(
                
                  .tab { margin-left: 15px; margin-right: 15px}"
       ),
-      selectInput("outcome", label = h4(HTML("<p style = 'color:white; font-size: 20pt; font-family: Bungee'>Select a health outcome:</p>")), choices = list("Angina" = "angina", "Asthma among young adults" = "asthma_young", "Asthma/COPD among older adults" = "asthma_older", "Pneumonia" = "pneumonia", "Heart failure" = "heart_fail", "Hypertension" = "hypertension", "Dehydration" = "dehydration", "Diabetes, short-term complications" = "diabetes_st", "Diabetes, long-term complications" = "diabetes_lt", "Diabetes, uncontrolled" = "diabetes_uc", "Amputation due to diabetes" = "amputation_diab", "Perforated Appendix" = "perf_appendix", "Urinary tract infection" = "uti"), selected = "hypertension"),
-      radioButtons("year", label = h4(HTML("<p style = 'color:white; font-size: 20pt; font-family: Bungee'>Select a year to visualize:</p>")), choices = list("2010" = 2010, "2011" = 2011, "2012" = 2012, "2013" = 2013, "2014" = 2014, "2015" = 2015, "2016" = 2016, "2017" = 2017), selected = 2010),
+      selectInput("outcome", label = h4(HTML("<p style = 'color:white; font-size: 20pt; font-family: Abril Fatface'>Select a health outcome:</p>")), choices = list("Angina" = "angina", "Asthma among young adults" = "asthma_young", "Asthma/COPD among older adults" = "asthma_older", "Pneumonia" = "pneumonia", "Heart failure" = "heart_fail", "Hypertension" = "hypertension", "Dehydration" = "dehydration", "Diabetes, short-term complications" = "diabetes_st", "Diabetes, long-term complications" = "diabetes_lt", "Diabetes, uncontrolled" = "diabetes_uc", "Amputation due to diabetes" = "amputation_diab", "Perforated Appendix" = "perf_appendix", "Urinary tract infection" = "uti"), selected = "hypertension"),
+      radioButtons("year", label = h4(HTML("<p style = 'color:white; font-size: 20pt; font-family: Abril Fatface'>Select a year to visualize:</p>")), choices = list("2010" = 2010, "2011" = 2011, "2012" = 2012, "2013" = 2013, "2014" = 2014, "2015" = 2015, "2016" = 2016, "2017" = 2017), selected = 2010),
       checkboxInput("quintile", label = "Color maps by quintiles", value = F),
       sidebarMenu(
         menuItem(HTML("<p style = 'font-family: Cabin; color:white;'>By Year</p>"), tabName = "single"),
@@ -25,10 +25,10 @@ shinyUI(
     ),
     dashboardBody(
       tags$style(HTML("
-                @import url('https://fonts.googleapis.com/css?family=Cabin|Bungee');
+                @import url('https://fonts.googleapis.com/css?family=Cabin|Abril Fatface');
                       
                 .main-header .logo {
-                font-family: 'Bungee', cursive;
+                font-family: 'Abril Fatface', cursive;
                 font-size: 40px;
                 background:#F5FFFA;
                 }
@@ -41,7 +41,7 @@ shinyUI(
                 .box.box-solid.box-primary>.box-header {
                 color:#fff;
                 background:#000080;
-                font-family:'Bungee';
+                font-family:'Abril Fatface';
                 }
                       
                 .box.box-solid.box-primary{
@@ -64,21 +64,21 @@ shinyUI(
         tabItem(tabName = "single",
                 fluidRow(
                   column(width = 6,
-                         box(title = h4("Health Outcomes by County", style = 'color:white; font-size: 20pt; font-family: Bungee'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("omap"))),
+                         box(title = h4("Health Outcomes by County", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("omap"))),
                   column(width = 6,
-                         box(title = h4("Annual Days Over National PM 2.5 Level", style = 'color:white; font-size: 20pt; font-family: Bungee'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("pmmap")))
+                         box(title = h4("PM 2.5 Levels", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("pmmap")))
                 ),
                 fluidRow(
                   column(width = 12,
-                         box(title = h4("Analysis", style = 'color:white; font-size: 20pt; font-family: Bungee'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, p("Analysis things will go here", style = 'color: white; font-size: 10pt; font-family: Cabin', class = 'tab')))
+                         box(title = h4("Analysis", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, p("Analysis things will go here", style = 'color: white; font-size: 10pt; font-family: Cabin', class = 'tab')))
                 )
                 ),
         tabItem(tabName = "continuous",
                 fluidRow(
-                  column(width = 6,
-                         box(title = h4("Health Outcomes by County", style = 'color:white; font-size: 20pt; font-family: Bungee'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, imageOutput("omap_cont"))),
-                  column(width = 6,
-                         box(title = h4("Annual Days Over National PM 2.5 Level", style = 'color:white; font-size: 20pt; font-family: Bungee'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, imageOutput("pmmap_cont")))
+                  column(width = 4,
+                         box(title = h4("Health Outcomes by County", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, imageOutput("omap_cont"))),
+                  column(width = 8,
+                         box(title = h4("PM 2.5 Levels", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("pmmap_big")))
                 )
         )
       ))
