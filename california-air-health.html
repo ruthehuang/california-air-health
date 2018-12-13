@@ -142,6 +142,8 @@ $(document).ready(function () {
 </div>
 <div id="related-work" class="section level2">
 <h2>Related Work</h2>
+<p>A 2006 study by Dominici, Peng, and Bell showed that short-term exposure to <span class="math inline">\(\text{PM}_{2.5}\)</span> increases the risk for hospital admission for cardiovascular and respiratory diseases. Specifically, there was a short-term increase in hospital admission rates associated with <span class="math inline">\(\text{PM}_{2.5}\)</span> for heart disease, heart rhythm, heart failure, COPD, and respiratory infection; the largest association was for heart failure. In a 2009 paper, Neupane et al. found that long-term exposure to higher levels of nitrogen dioxide and <span class="math inline">\(\text{PM}_{2.5}\)</span> is significantly associated with hospitalization for community-aquired pneumonia among elderly patients in Hamilton, Ontario, Canada. Similarly, Ostro et al. found in 2008 that components of <span class="math inline">\(\text{PM}_{2.5}\)</span> were associated with several childhood respiratory diseases including pneumonia, bronchitis, and asthma among children in six California counties. Much work on the association of <span class="math inline">\(\text{PM}_{2.5}\)</span> with health outcomes focuses on birth outcomes or respiratory issues; we expand this exploration to all classifications of preventable hospitalization.</p>
+<p>Bell et al. examine how air pollution control could not only prevent adverse health outcomes but also make a monumental economic impact. Air pollution control policy could help prevent over 156,000 deaths, 4 million asthma attacks, 300,000 children’s medical visits, and almost 48,000 cases of chronic bronchitis over a twenty-year period in Santiago, Sao Paulo, and Mexico City; the economic value of these avoided health outcomes is about 21-165 billion USD. Fisk and Chan found in 2016 that using portable air cleaners led to economic benefits exceeding or far exceeding intervention costs. Thus, understanding how <span class="math inline">\(\text{PM}_{2.5}\)</span> is related to preventable hospitalizations can help California counties plan for intervention or even prevention efforts as well as budget for the impact of adverse health outcomes from wildfires.</p>
 </div>
 <div id="initial-questions" class="section level2">
 <h2>Initial Questions</h2>
@@ -155,8 +157,8 @@ $(document).ready(function () {
 <div id="data-analysis" class="section level2">
 <h2>Data Analysis</h2>
 </div>
-<div id="narrative-and-summary" class="section level2">
-<h2>Narrative and Summary</h2>
+<div id="results-and-summary" class="section level2">
+<h2>Results and Summary</h2>
 <pre class="r"><code>rm(list = ls())
 library(tidyverse); library(lubridate); library(stringr); library(rgdal)
 
@@ -164,7 +166,7 @@ library(tidyverse); library(lubridate); library(stringr); library(rgdal)
 pm25 &lt;- read_csv(&quot;data/pm25_annual-days-above-nat-24-hr-stnd.csv&quot;, na = &quot;*&quot;) %&gt;% group_by(county) %&gt;% summarize(pm2010 = mean(pm2010, na.rm = T), pm2011 = mean(pm2011, na.rm = T), pm2012 = mean(pm2012, na.rm = T), pm2013 = mean(pm2013, na.rm = T), pm2014 = mean(pm2014, na.rm = T), pm2015 = mean(pm2015, na.rm = T), pm2016 = mean(pm2016, na.rm = T), pm2017 = mean(pm2017, na.rm = T)) %&gt;% gather(year, pm25, pm2010:pm2017) %&gt;% mutate(year = as.numeric(str_sub(year, 3, 6))) %&gt;% arrange(county)
 head(pm25)
 
-demo &lt;- read_csv(&quot;data/age_edu_race.csv&quot;)[ , -1] %&gt;% group_by(Geography, Year) %&gt;% summarize(age60_perc = mean(age60_perc, na.rm = T), bachelor_perc = mean(bachelor_perc, na.rm = T), est.white.percent = mean(est.white.percent, na.rm = T), est.black.percent = mean(est.black.percent, na.rm = T)) %&gt;% ungroup() %&gt;% mutate(Geography = str_sub(Geography, 1, -20)) %&gt;% rename(county = Geography, year = Year)
+demo &lt;- read_csv(&quot;data/age_edu_race.csv&quot;)[ , -1] %&gt;% group_by(Geography, Year) %&gt;% filter(bachelor_perc &lt;= 100) %&gt;% summarize(age60_perc = mean(age60_perc, na.rm = T), bachelor_perc = mean(bachelor_perc, na.rm = T), est.white.percent = mean(est.white.percent, na.rm = T), est.black.percent = mean(est.black.percent, na.rm = T)) %&gt;% ungroup() %&gt;% mutate(Geography = str_sub(Geography, 1, -20)) %&gt;% rename(county = Geography, year = Year)
 head(demo)
 
 phosp &lt;- read_csv(&quot;data/ca-oshpd-preventablehospitalizations-county-2005-2017.csv&quot;)
@@ -174,13 +176,19 @@ ph_late &lt;- phosp %&gt;% filter(Year &gt;= 2016) %&gt;% group_by(County, Year)
 
 phosp &lt;- rbind(ph_early, ph_late) %&gt;% arrange(County) %&gt;% rename(county = County, year = Year)
 
-dat &lt;- demo %&gt;% left_join(pm25, by = c(&quot;county&quot;, &quot;year&quot;)) %&gt;% left_join(phosp, by = c(&quot;county&quot;, &quot;year&quot;))
-# save(dat, file = &quot;data/dat.Rdata&quot;)
+# label counties by clustering algorithm
+dat &lt;- demo %&gt;% left_join(pm25, by = c(&quot;county&quot;, &quot;year&quot;)) %&gt;% left_join(phosp, by = c(&quot;county&quot;, &quot;year&quot;)) %&gt;% mutate(region = NA, region = replace(region, county %in% c(&quot;Del Norte&quot;, &quot;Humboldt&quot;, &quot;Mendocino&quot;, &quot;Lake&quot;, &quot;Siskiyou&quot;, &quot;Trinity&quot;, &quot;Shasta&quot;, &quot;Tehema&quot;, &quot;Butte&quot;, &quot;Yuba&quot;,
+&quot;Sacramento&quot;, &quot;Modoc&quot;, &quot;Lassen&quot;), &quot;northern&quot;), region = replace(region, county %in% c(&quot;Sonoma&quot;, &quot;Marin&quot;, &quot;Solano&quot;, &quot;Napa&quot;, &quot;Yolo&quot;, &quot;Contra Costa&quot;, &quot;Alameda&quot;, &quot;San Mateo&quot;, &quot;Santa Clara&quot;, &quot;Santa Cruz&quot;, &quot;San Benito&quot;, &quot;Monterey&quot;, &quot;San Luis Obispo&quot;, &quot;Santa Barbara&quot;, &quot;Ventura&quot;, &quot;Orange&quot;, &quot;San Diego&quot;, &quot;Riverside&quot;, &quot;Sierra&quot;, &quot;Nevada&quot;, &quot;Placer&quot;, &quot;El Dorado&quot;, &quot;Amador&quot;, &quot;Mono&quot;), &quot;coastal&quot;), region = replace(region, county %in% c(&quot;Alpine&quot;, &quot;Calaveras&quot;, &quot;Tuolumne&quot;, &quot;Mariposa&quot;, &quot;Inyo&quot;), &quot;motherlode&quot;), region = replace(region, county %in% c(&quot;Glenn&quot;, &quot;Colusa&quot;, &quot;Sutter&quot;, &quot;San Joaquin&quot;, &quot;Stanislaus&quot;, &quot;Merced&quot;, &quot;Madera&quot;, &quot;Fresno&quot;, &quot;Kings&quot;, &quot;Tulare&quot;, &quot;Kern&quot;, &quot;Los Angeles&quot;, &quot;San Bernardino&quot;), &quot;farm&quot;), region = replace(region, county == &quot;San Francisco&quot;, &quot;sanfrancisco&quot;), region = replace(region, county == &quot;Imperial&quot;, &quot;imperial&quot;))
+
+# # label counties by CDSS groups
+# dat &lt;- demo %&gt;% left_join(pm25, by = c(&quot;county&quot;, &quot;year&quot;)) %&gt;% left_join(phosp, by = c(&quot;county&quot;, &quot;year&quot;)) %&gt;% mutate(region = NA, region = replace(region, county %in% c(&quot;Alameda&quot;, &quot;Contra Costa&quot;, &quot;Marin&quot;, &quot;Napa&quot;, &quot;San Francisco&quot;, &quot;San Mateo&quot;, &quot;Santa Clara&quot;, &quot;Santa Cruz&quot;, &quot;Solano&quot;, &quot;Sonoma&quot;), &quot;bayarea&quot;), region = replace(region, county %in% c(&quot;Orange&quot;, &quot;Riverside&quot;, &quot;San Bernardino&quot;, &quot;San Diego&quot;, &quot;Santa Barbara&quot;, &quot;Ventura&quot;), &quot;socal&quot;), region = replace(region, county == &quot;Los Angeles&quot;, &quot;losangeles&quot;), region = replace(region, county %in% c(&quot;Fresno&quot;, &quot;Imperial&quot;, &quot;Kern&quot;, &quot;Kings&quot;, &quot;Madera&quot;, &quot;Merced&quot;, &quot;Monterey&quot;, &quot;San Benito&quot;, &quot;San Joaquin&quot;, &quot;San Luis Obispo&quot;, &quot;Stanislaus&quot;, &quot;Tulare&quot;), &quot;csfarm&quot;), region = replace(region, county %in% c(&quot;Alpine&quot;, &quot;Amador&quot;, &quot;Butte&quot;, &quot;Calaveras&quot;, &quot;Del Norte&quot;, &quot;Glenn&quot;, &quot;Humboldt&quot;, &quot;Inyo&quot;, &quot;Lake&quot;, &quot;Lassen&quot;, &quot;Mariposa&quot;, &quot;Mendocino&quot;, &quot;Modoc&quot;, &quot;Mono&quot;, &quot;Nevada&quot;, &quot;Plumas&quot;, &quot;Shasta&quot;, &quot;Sierra&quot;, &quot;Siskiyou&quot;, &quot;Tehama&quot;, &quot;Trinity&quot;, &quot;Tuolumne&quot;), &quot;nmountain&quot;), region = replace(region, county %in% c(&quot;Colusa&quot;, &quot;El Dorado&quot;, &quot;Placer&quot;, &quot;Sacramento&quot;, &quot;Sutter&quot;, &quot;Yolo&quot;, &quot;Yuba&quot;), &quot;centralvalley&quot;))
+
+# save(dat, file = &quot;data/dat.R&quot;)
 rm(list = setdiff(ls(), &quot;dat&quot;))</code></pre>
 <pre class="r"><code>rm(list = ls())
 library(tidyverse); library(lubridate); library(stringr); library(rgdal)
 
-load(&quot;data/dat.Rdata&quot;)
+load(&quot;data/dat.R&quot;)
 cali &lt;- readOGR(dsn = &quot;data/CA_Counties&quot;, layer = &quot;CA_Counties_TIGER2016&quot;)</code></pre>
 <pre><code>## OGR data source with driver: ESRI Shapefile 
 ## Source: &quot;C:\Users\ruthe\Documents\2018Q1_DataScience\homework\california-air-health\data\CA_Counties&quot;, layer: &quot;CA_Counties_TIGER2016&quot;
@@ -255,8 +263,8 @@ bigplot &lt;- function(var, cut = NULL, omit = F)
   }
 }</code></pre>
 </div>
-<div id="days-over-national-pm-2.5-standard-by-county-over-time" class="section level2">
-<h2>Days Over National PM 2.5 Standard by County Over Time</h2>
+<div id="days-over-national-textpm_2.5-standard-by-county-over-time" class="section level2">
+<h2>Days Over National <span class="math inline">\(\text{PM}_{2.5}\)</span> Standard by County Over Time</h2>
 <pre class="r"><code>par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
 pmplot(2010)
 pmplot(2011)
@@ -406,6 +414,7 @@ cov.beta &lt;- list(covf = &quot;exp&quot;, nugget = FALSE)
 cov.nu &lt;- list(covf = &quot;exp&quot;, nugget = ~type, random.effect = FALSE)
 createSTmodel(st_dehy_obj, LUR = LUR, ST = ST, cov.beta = cov.beta, 
               cov.nu = cov.nu, locations = locations)</code></pre>
+<p>Limitation: lot of zeros for days above national <span class="math inline">\(\text{PM}_{2.5}\)</span> standard</p>
 </div>
 
 
