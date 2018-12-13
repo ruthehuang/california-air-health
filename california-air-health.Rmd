@@ -23,7 +23,9 @@ The extent of risk undeniably poses a huge task for California firefighters. His
 
 ## Related Work
 
-A 2006 study by Dominici, Peng, and Bell showed that short-term exposure to $\text{PM}_{2.5}$ increases the risk for hospital admission for cardiovascular and respiratory diseases. Specifically, there was a short-term increase in hospital admission rates associated with $\text{PM}_{2.5}$ 
+A 2006 study by Dominici, Peng, and Bell showed that short-term exposure to $\text{PM}_{2.5}$ increases the risk for hospital admission for cardiovascular and respiratory diseases. Specifically, there was a short-term increase in hospital admission rates associated with $\text{PM}_{2.5}$  for heart disease, heart rhythm, heart failure, COPD, and respiratory infection; the largest association was for heart failure. In a 2009 paper, Neupane et al. found that long-term exposure to higher levels of nitrogen dioxide and $\text{PM}_{2.5}$ is significantly associated with hospitalization for community-aquired pneumonia among elderly patients in Hamilton, Ontario, Canada. Similarly, Ostro et al. found in 2008 that components of $\text{PM}_{2.5}$ were associated with several childhood respiratory diseases including pneumonia, bronchitis, and asthma among children in six California counties. Much work on the association of $\text{PM}_{2.5}$ with health outcomes focuses on birth outcomes or respiratory issues; we expand this exploration to all classifications of preventable hospitalization.
+
+Bell et al. examine how air pollution control could not only prevent adverse health outcomes but also make a monumental economic impact. Air pollution control policy could help prevent over 156,000 deaths, 4 million asthma attacks, 300,000 children's medical visits, and almost 48,000 cases of chronic bronchitis over a twenty-year period in Santiago, Sao Paulo, and Mexico City; the economic value of these avoided health outcomes is about 21-165 billion USD. Fisk and Chan found in 2016 that using portable air cleaners led to economic benefits exceeding or far exceeding intervention costs. Thus, understanding how $\text{PM}_{2.5}$ is related to preventable hospitalizations can help California counties plan for intervention or even prevention efforts as well as budget for the impact of adverse health outcomes from wildfires.
 
 ## Initial Questions
 
@@ -68,7 +70,7 @@ rm(list = setdiff(ls(), "dat"))
 rm(list = ls())
 library(tidyverse); library(lubridate); library(stringr); library(rgdal)
 
-load("data/dat.Rdata")
+load("data/dat.R")
 cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
 cali$NAME <- as.character(cali$NAME)
 # plot(cali)
@@ -323,7 +325,7 @@ createSTmodel(st_dehy_obj, LUR = LUR, ST = ST, cov.beta = cov.beta,
 
 ```
 
-
+Limitation: lot of zeros for days above national $\text{PM}_{2.5}$ standard
 
 
 
