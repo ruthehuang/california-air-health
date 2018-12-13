@@ -8,7 +8,7 @@ output: html_document
 ##Please run Ruthe's "california-air-health" first!
 
 
-```{r message = FALSE, warning=FALSE}
+```{r data preparation, message = FALSE, warning=FALSE}
 # prepare data
 library("SpatioTemporal"); library("sp")
 
@@ -49,7 +49,7 @@ datnew <- left_join(dat,loc.all,by = "county") %>%
 
 
 
-```{r message = FALSE,warning = FALSE}
+```{r testing linearity of spatial and temporal trend for pm25, message = FALSE,warning = FALSE}
 # EDA: temporal trend in each county
 plot_time <- datnew %>% group_by(year, county) %>% filter(!is.na(pm25)) %>%
   ggplot(aes(x = year, y = pm25)) +
@@ -70,7 +70,7 @@ summary.gam(gam_pm25_spacetime)$s.table
 ```
 
 **2. Outcomes**
-```{r}
+```{r testing linearity of spatial and temporal trend for outcomes}
 # test the spatio-temporal trend of outcome: wittern as a function
 # default data set: "datnew"; input an outcome, y is a character
 
@@ -105,7 +105,7 @@ st.trend("ds")
 -Outcomes: All but Angina and Perforated Appendix are spatially autocorrelated
 
 
-```{r}
+```{r moran's I}
 library("ape")
 #0. test the existence of spatial auto-correlation: Moran's I
 ca.dists <- as.matrix(dist(cbind(datnew$long, datnew$lat)))
@@ -129,7 +129,7 @@ Moran.I(data.frame(datnew)[,"pm25"],ca.dists.inv,na.rm = TRUE)$p.value
 **2. CAR model**
 The conditional autoregressive (CAR) model accounts for the autocorrelation from space and time, then models the residuals and gives overall estimates (not county-specific) for predictors of interest.
 
-```{r message=FALSE,warning=FALSE}
+```{r function for the car model, message=FALSE,warning=FALSE}
 #0. load library
 library("spdep"); library("CARBayesST")
 #1. prepare data for CAR model: need to delete counties with NAs in pm25
