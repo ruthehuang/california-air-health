@@ -50,11 +50,12 @@ datnew <- left_join(dat,loc.all,by = "county") %>%
 
 
 ```{r testing linearity of spatial and temporal trend for pm25, message = FALSE,warning = FALSE}
-# EDA: temporal trend in each county
-plot_time <- datnew %>% group_by(year, county) %>% filter(!is.na(pm25)) %>%
-  ggplot(aes(x = year, y = pm25)) +
-  geom_smooth(method = "gam",formula = y~s(x,k = 5)) +
-  facet_wrap(.~county,scales="free_y") +
+
+# EDA: temporal trend in each region
+plot_pm25_time <- datnew %>% group_by(year, county) %>% filter(!is.na(pm25)) %>%
+  ggplot(aes(x = year, y = pm25,color = county)) +
+  geom_smooth(method = "gam",formula = y~s(x,k= 5),se = FALSE,size = .5) +
+  facet_wrap(.~region,ncol = 5) +
   theme_bw()
 
 
@@ -71,6 +72,10 @@ summary.gam(gam_pm25_spacetime)$s.table
 
 **2. Outcomes**
 ```{r testing linearity of spatial and temporal trend for outcomes}
+
+# no plot for EDA: very messy plot
+
+
 # test the spatio-temporal trend of outcome: wittern as a function
 # default data set: "datnew"; input an outcome, y is a character
 
