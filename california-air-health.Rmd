@@ -66,6 +66,7 @@ loc.all <- data.frame(loc,x = coord$coords.x1, y = coord$coords.x2)
 datnew <- left_join(dat,loc.all,by = "county") %>% 
   mutate(lat = as.numeric(as.character(INTPTLAT)),
          long = as.numeric(as.character(INTPTLON))) 
+
 ```
 
 ## Exploratory Data Analysis
@@ -90,7 +91,7 @@ plot_pm25_time
 
 #### Spatial autocorrelation 
 
-The existence of spatial autocorrelations is tested via Moran's I Index for PM2.5 and preventable hospitalization rate for all causes. It turns out that all causes but "Angina" and "Perforated Appendix" are spatially autocorrelated. Strong evidence of the spatial autocorrelation of PM2.5 is also presented from the test.
+Our data is correlated in nature because of the intrinsic geographical clustering. We start with a Generalized Linear Model (GLM) which assumes independence of data, and we test the existence of spatial autocorrelations among residuals via Moran's I Index. 9 out of 17 causes of the preventable hospitalization rate are spatially autocorrelated. Causes that we fail to detect for spatial autocorrelation after accounting for the effect from PM2.5 and other covariates include Angina, Dehydration, Diabetes Short-term Complications, Hypertension, Lower-Extremity Amputation, Perforated Appendix, Uncontrolled Diabetes, and Prevention Quality Diabetes Composite.
 
 ```{r (Xinye) Morans I-testing spatial autocorrelation, message = FALSE, warning = FALSE}
 ca.dists <- as.matrix(dist(cbind(datnew$long, datnew$lat)))
@@ -98,18 +99,37 @@ ca.dists.inv <- 1/ca.dists
 diag(ca.dists.inv) <- 0
 ca.dists.inv[is.infinite(ca.dists.inv)] <- 0
 
-moransI_pval <- c()
-for (i in 1:17){
-  moransI_pval[i] <- Moran.I(data.frame(datnew)[,7+i],
-                             ca.dists.inv,na.rm = TRUE)$p.value 
+# a function that returns pvalue from Moran's I index testing
+moransI.pval <- function(y){
+  res = rep(NA,320)
+  if (! y %in% names(datnew)[8:24]) 
+  {print("Outcome does not exist")}
+  
+  else{
+    y2 = as.vector(pull(datnew[,y]))
+    
+    datnew_copy <- data.frame(datnew) %>% 
+      dplyr::mutate(outcome_interest = y2) %>%
+      dplyr::select(outcome_interest,year,age60_perc,est.black.percent,
+                    bachelor_perc,pm25)
+    
+    fit_glm = glm(outcome_interest ~ pm25 + age60_perc + est.black.percent +
+                    bachelor_perc, data = datnew_copy)
+    res_glm = residuals.glm(fit_glm)
+    res[as.numeric(names(res_glm))] <- res_glm 
+    Moran.I(res,ca.dists.inv,na.rm = TRUE)$p.value
+    #return(res)
+  }
 }
 
-# most of the outcomes are spatially autocorrelated except for 
-outcome_moransI <- names(datnew)[c(8:24)][which(moransI_pval > .05)]
+mI_pval <- c()
 
-# pm25
-pm25_moransI <- Moran.I(data.frame(datnew)[,"pm25"],
-                        ca.dists.inv,na.rm = TRUE)$p.value 
+for (i in 1:17){
+  mI_pval[i] <- moransI.pval(names(datnew)[7+i])
+}
+
+# these outcomes are not spatially autocorrelated
+#names(datnew[8:24])[which(mI_pval > 0.05)]
 
 ```
 
