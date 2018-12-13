@@ -7,7 +7,7 @@ cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
 caplot <- function(yr, var, cutoffs = NULL) #year: numeric input, var: character input
 {
   par(oma = c(4, 0, 0, 0), mar = c(2.5, 0.5, 1.5, 0.5))
-  df <- dat %>% filter(year == yr) %>% select_("county", var)
+  df <- dat %>% filter(year == yr) %>% dplyr::select_("county", var)
   map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
   if (length(cutoffs) == 0)
   {
@@ -27,7 +27,7 @@ caplot <- function(yr, var, cutoffs = NULL) #year: numeric input, var: character
 # PM 2.5 plotting function
 pmplot <- function(yr, legend = T) # special function for PM 2.5 plots
 {
-  df <- dat %>% filter(year == yr) %>% select(county, pm25)
+  df <- dat %>% filter(year == yr) %>% dplyr::select(county, pm25)
   map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
   cols <- as.character(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T, labels = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy")))
 

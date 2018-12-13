@@ -169,20 +169,20 @@ car.model <- function(y,data = dat_car){
       dplyr::select(outcome_interest,year,age60_perc,est.black.percent,
              bachelor_perc,pm25)
     
-    fitst_adapt <- ST.CARadaptive(outcome_interest~age60_perc + 
+    fitst_adapt <- ST.CARadaptive(outcome_interest~pm25 + age60_perc + 
                                     est.black.percent +
-                                    bachelor_perc + year +pm25, 
+                                    bachelor_perc + year, 
                                   family = "gaussian",
                                   data = dat_car_copy, W = W, burnin = 500, 
                                   n.sample = 50500,
                                   thin = 10)
     #fitst_adapt$summary.results[c(2:5),c(1,2,3)]
     
-    point_estimate <- unname(round(fitst_adapt$summary.results[c(2:4),1],2))
-    lb <- round(fitst_adapt$summary.results[c(2:4),2],2)
-    ub <- round(fitst_adapt$summary.results[c(2:4),3],2)
+    point_estimate <- unname(round(fitst_adapt$summary.results[c(2:5),1],2))
+    lb <- round(fitst_adapt$summary.results[c(2:5),2],2)
+    ub <- round(fitst_adapt$summary.results[c(2:5),3],2)
     CI <- noquote(paste("(",lb,",",ub,")",sep = ""))
-    var_name <- c("Age>60 (%)", "Black (%)", ">Bachelor (%)")
+    var_name <- c("pm25","Age>60 (%)", "Black (%)", ">Bachelor (%)")
     model_summary <- cbind(var_name, point_estimate, CI)
     colnames(model_summary) <- c("","Estimate","95% Credible Interval")
     tb <- kable(model_summary)
