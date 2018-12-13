@@ -31,11 +31,222 @@ Bell et al. examine how air pollution control could not only prevent adverse hea
 
 ## Data
 
+
+```{r (Xinye) packages that I will be using, message=FALSE,warning=FALSE}
+library("SpatioTemporal"); library("sp"); library("mgcv") #we need "gam" function
+library("ggplot2"); library("knitr"); library("dplyr"); library("ape") #moran's I
+library("spdep"); library("CARBayesST")
+```
+
+
+```{r (Xinye) data for EDA and GAM, message = FALSE, warning=FALSE}
+# prepare data
+
+#1. latitude and longitude
+loc = cali@data[,c(5,6,ncol(cali@data)-1,ncol(cali@data))]
+loc$NAME = as.character(loc$NAME)
+names(loc)[1] = "county"
+loc$NAMELSAD = as.character(loc$NAMELSAD)
+
+#2. xy coordinates using WGS84, just in case
+# source: https://rpubs.com/dasaptaerwin/19879
+xy <- as.data.frame(loc[,c(3,4)])
+xy <- as.data.frame(apply(xy,2,function(x){as.numeric(as.character(x))}))
+cord.dec = SpatialPoints(cbind(xy$INTPTLON,-xy$INTPTLAT), 
+                         proj4string=CRS("+proj=longlat"))
+coord <- as.data.frame(spTransform(cord.dec, CRS("+init=epsg:32748")))
+
+#3. combine latlong and coordinates
+loc.all <- data.frame(loc,x = coord$coords.x1, y = coord$coords.x2)
+
+
+#4. merge; convert lat and long to numeric 
+# this is the data used for GAM, but not for CAR model
+
+datnew <- left_join(dat,loc.all,by = "county") %>% 
+  mutate(lat = as.numeric(as.character(INTPTLAT)),
+         long = as.numeric(as.character(INTPTLON))) 
+```
+
 ## Exploratory Data Analysis
+
+#### 1. Spatial and temporal pattern for PM2.5
+PM2.5 levels vary across different regions with higher variability in the Farm region and relatively similar amount across counties in other regions. The temporal patterns for PM2.5 are also heterogeneous across regions and counties.
+
+```{r (Xinye) EDA, warning = FALSE, message = FALSE}
+
+# EDA: temporal trend in each region
+plot_pm25_time <- datnew %>% group_by(year, county) %>% filter(!is.na(pm25)) %>%
+  ggplot(aes(x = year, y = pm25,color = county)) +
+  geom_smooth(method = "gam",formula = y~s(x,k= 5),se = FALSE,size = .5) +
+  facet_wrap(.~region,ncol = 5) + 
+  labs(title = "Temporal trends of PM2.5 across regions") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5,size = 10))
+
+plot_pm25_time
+```
+
+
+#### Spatial autocorrelation 
+
+The existence of spatial autocorrelations is tested via Moran's I Index for PM2.5 and preventable hospitalization rate for all causes. It turns out that all causes but "Angina" and "Perforated Appendix" are spatially autocorrelated. Strong evidence of the spatial autocorrelation of PM2.5 is also presented from the test.
+
+```{r (Xinye) Morans I-testing spatial autocorrelation, message = FALSE, warning = FALSE}
+ca.dists <- as.matrix(dist(cbind(datnew$long, datnew$lat)))
+ca.dists.inv <- 1/ca.dists
+diag(ca.dists.inv) <- 0
+ca.dists.inv[is.infinite(ca.dists.inv)] <- 0
+
+moransI_pval <- c()
+for (i in 1:17){
+  moransI_pval[i] <- Moran.I(data.frame(datnew)[,7+i],
+                             ca.dists.inv,na.rm = TRUE)$p.value 
+}
+
+# most of the outcomes are spatially autocorrelated except for 
+outcome_moransI <- names(datnew)[c(8:24)][which(moransI_pval > .05)]
+
+# pm25
+pm25_moransI <- Moran.I(data.frame(datnew)[,"pm25"],
+                        ca.dists.inv,na.rm = TRUE)$p.value 
+
+```
+
+
+
+
+#### Linearity of spatial and temporal patterns 
+
+We used the Generalized Additive Model (GAM) with splines in both geographical locations and years to test the linearity of spatial and temporal trends for PM2.5. Both the spatial and the temporal pattern of PM2.5 are non-linear.
+
+```{r (Xinye) gam-testing linearity of spatial and temporal trend for pm2.5, message = FALSE,warning = FALSE}
+
+# test the spatio-temporal trend of PM2.5
+gam_pm25_spacetime <- gam(pm25~s(lat,long) + s(year, k = 5),
+                          data = datnew,family = gaussian)
+
+# gam output
+tb_gam_pm25_st <- summary.gam(gam_pm25_spacetime)$s.table
+colnames(tb_gam_pm25_st) <- c("Estimated df", "Residual df",
+                              "F-statistic","p-value")
+tb_gam_pm25_st[1,4] <- "<2.2e-16"
+tb_gam_pm25_st[,1:3] <- round(as.numeric(tb_gam_pm25_st[,1:3]),2)
+tb_gam_pm25_st[2,4] <- 0.0012
+kb_gam_pm25_st <- kable(tb_gam_pm25_st, caption = "linearity of spatial and temporal trends for PM2.5")
+
+kb_gam_pm25_st
+```
+
+
+We also examine whether the spatiotemporal trend for each outcome is linear by applying the same method. It turns out that the spatial patterns are nonlinear for all outcomes whereas the temporal patterns are likely to be linear for all.
+
+```{r (Xinye) testing linearity of spatial and temporal trend for outcomes,message = FALSE, warning = FALSE}
+
+st.trend <- function(y,data = datnew) {
+  require("mgcv");require("dplyr")
+  # check whether input outcome exists
+  if (! y %in% names(datnew)[8:24]) 
+  {print("Outcome does not exist")}
+  
+  else{
+    y = datnew[,y]
+  #GAM
+  gam_outcome_spacetime <- gam(y~s(lat,long)+s(year, k = 5),
+                               data = datnew,family = gaussian)
+  test_linear_trend <- summary(gam_outcome_spacetime)$s.table
+  
+
+  #return smoothness results
+  return(test_linear_trend)}
+}
+
+
+tmp = apply(matrix(names(datnew)[8:24],ncol = 1),1, st.trend)
+
+tb_outcome_st <- matrix(c(mean(tmp[7,] < 0.05),mean(tmp[8,] < 0.05)),ncol = 2)
+colnames(tb_outcome_st) <- c("Spatial non-linearity (%)",
+                             "Temporal non-linearity (%)")
+kable(tb_outcome_st, caption = "Spatio-temporal trends for all outcomes")
+```
+
 
 ## Data Analysis
 
+
+#### CAR Model (Xinye): explain what it is and why
+
+
+
 ## Results and Summary
+
+#### CAR Model results (this should go last): need caption maybe?
+
+```{r (Xinye) CAR model, message = FALSE, warning = FALSE}
+#1. prepare data for CAR model: need to delete counties with NAs in pm25
+dat_car <- datnew %>% filter(!county %in% c("Yuba","El Dorado"))
+
+#2. W matrix with binary elements that indicate shared border between counties
+W.nb <-poly2nb(cali)
+W.list <- nb2listw(W.nb, style = "B")
+W <- nb2mat(W.nb, style = "B")
+rownames(W) = cali@data$NAME;colnames(W) = cali@data$NAME
+
+# we have limited counties
+index = c(which(is.na(match(loc.all$county,dat_car$county))))
+W <- W[-index,-index]
+
+# Shasta d.n. have any neighbor -> manually inpute the closet neighbor as 1
+# make sure W is symmetric
+W[12,28] <- 1; W[28,12] <- 1;W[12,14] <- 1;W[14,12] <- 1
+
+#3. Impute missing covariate 
+dat_car[which(is.na(dat_car$pm25)),c("pm25")] <- c(1,0,0,1.61,10,1,0,1,1,1,0,0,.5,.5,3.5,4,1)
+
+#4. CAR model
+
+# the function "car.model" takes an outcome name (character) and return the summary that includes coefficient estimate and credible interval
+
+# default data: dat_car
+car.model <- function(y,data = dat_car){
+  require("knitr");require("CARBayes");require("dplyr")
+  if (! y %in% names(dat_car)[8:24]) 
+  {print("Outcome does not exist")}
+  else{
+    y2 = pull(dat_car[,y])
+    
+    dat_car_copy <- data.frame(dat_car) %>% 
+      mutate(outcome_interest = y2) %>%
+      dplyr::select(outcome_interest,year,age60_perc,est.black.percent,
+             bachelor_perc,pm25)
+    
+    fitst_adapt <- ST.CARadaptive(outcome_interest~pm25 + age60_perc + 
+                                    est.black.percent +
+                                    bachelor_perc + year, 
+                                  family = "gaussian",
+                                  data = dat_car_copy, W = W, burnin = 500, 
+                                  n.sample = 50500,
+                                  thin = 10)
+    #fitst_adapt$summary.results[c(2:5),c(1,2,3)]
+    
+    point_estimate <- unname(round(fitst_adapt$summary.results[c(2:5),1],2))
+    lb <- round(fitst_adapt$summary.results[c(2:5),2],2)
+    ub <- round(fitst_adapt$summary.results[c(2:5),3],2)
+    CI <- noquote(paste("(",lb,",",ub,")",sep = ""))
+    var_name <- c("pm25","Age>60 (%)", "Black (%)", ">Bachelor (%)")
+    model_summary <- cbind(var_name, point_estimate, CI)
+    colnames(model_summary) <- c("","Estimate","95% Credible Interval")
+    tb <- kable(model_summary)
+    return(tb)
+  }
+}
+
+# we need to decide which outcome to present
+#car.model("diabetes_lt")
+```
+
+
+## All Ruthe's code
 
 ```{r Read in data, eval = F}
 rm(list = ls())
