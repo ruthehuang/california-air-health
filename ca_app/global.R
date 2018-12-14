@@ -43,4 +43,41 @@ pmplot <- function(yr, legend = T) # special function for PM 2.5 plots
 cutoffs <- list(angina = c(0, 10, 20, 30, 45, 65), asthma_young = c(0, 10, 20, 30, 45, 125), asthma_older = c(100, 250, 400, 600, 800, 1000), pneumonia = c(50, 100, 200, 300, 400, 550), dehydration = c(30, 80, 100, 150, 200, 320), diabetes_st = c(15, 45, 75, 100, 120, 150), diabetes_lt = c(20, 50, 80, 100, 150, 230), diabetes_uc = c(0, 5, 15, 30, 60, 100), amputation_diab = c(0, 10, 20, 30, 45, 65), heart_fail = c(120, 200, 300, 400, 500, 600), hypertension = c(0, 10, 25, 40, 60, 120), perf_appendix = c(15, 35, 50, 100, 500, 700), uti = c(35, 100, 125, 150, 200, 270))
 
 
+# Xinye's function: car.model - return car results in kable format
+
+# default data: dat_car
+car.model <- function(y,data = dat_car){ #y: outcome name, character
+  require("knitr");require("CARBayes");require("dplyr")
+  if (! y %in% names(dat_car)[8:24]) 
+  {print("Outcome does not exist")}
+  else{
+    y2 = pull(dat_car[,y])
+    
+    dat_car_copy <- data.frame(dat_car) %>% 
+      mutate(outcome_interest = y2) %>%
+      dplyr::select(outcome_interest,year,age60_perc,est.black.percent,
+                    bachelor_perc,pm25)
+    
+    set.seed(1214)
+    fitst_adapt <- ST.CARadaptive(outcome_interest~pm25 + age60_perc + 
+                                    est.black.percent +
+                                    bachelor_perc + year, 
+                                  family = "gaussian",
+                                  data = dat_car_copy, W = W, burnin = 500, 
+                                  n.sample = 50500,
+                                  thin = 10)
+    #fitst_adapt$summary.results[c(2:5),c(1,2,3)]
+    
+    point_estimate <- unname(round(fitst_adapt$summary.results[c(2:5),1],2))
+    lb <- round(fitst_adapt$summary.results[c(2:5),2],2)
+    ub <- round(fitst_adapt$summary.results[c(2:5),3],2)
+    CI <- noquote(paste("(",lb,",",ub,")",sep = ""))
+    var_name <- c("pm25","Age>60 (%)", "Black (%)", ">Bachelor (%)")
+    model_summary <- cbind(var_name, point_estimate, CI)
+    colnames(model_summary) <- c("","Estimate","95% Credible Interval")
+    tb <- kable(model_summary, caption = noquote(paste("Bayes CAR results for",y)))
+    return(tb)
+  }
+}
+
 
