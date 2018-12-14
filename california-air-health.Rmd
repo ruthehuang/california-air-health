@@ -11,40 +11,75 @@ knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.align = "center
 
 ## Motivation and Overview
 
-Nearly [90 million Americans](https://i.redd.it/bbnxf9b8rm321.jpg) are breathing air that doesn't meet the World Health Oranizations safe $\text{PM}_{2.5}$ limit. The [UK Department for Environment, Food & Rural Affairs](https://laqm.defra.gov.uk/public-health/pm25.html) states that long-term $\text{PM}_{2.5}$ exposure poses a variety of health risks; most commonly, health consequences due to long-term $\text{PM}_{2.5}$ exposure take the form of cardiovascular or respiratory diseases. This poses a serious public health problem because such diseases reduce both quality and length of life. 
+Nearly [90 million Americans](https://i.redd.it/bbnxf9b8rm321.jpg) are breathing air that doesn't meet the World Health Oranizations safe PM2.5 limit. The [UK Department for Environment, Food & Rural Affairs](https://laqm.defra.gov.uk/public-health/pm25.html) states that long-term PM2.5 exposure poses a variety of health risks; most commonly, health consequences due to long-term PM2.5 exposure take the form of cardiovascular or respiratory diseases. This poses a serious public health problem because such diseases reduce both quality and length of life. 
 
-There are many sources of $\text{PM}_{2.5}$, including vehicular emissions and ash. California's large traffic volume and increasingly frequent wildfires both contribute to the state's $\text{PM}_{2.5}$ levels. While wildfires are natural, climate change is making them more common and more severe. According to the [Environmental Protection Agency](https://www.epa.gov/sites/production/files/2016-09/documents/climate-change-ca.pdf), the state of California is becoming warmer as a whole and southern California, in particular, is becoming drier. California's average annual precipitation and temperature from 1895-2017 are shown below. These unnaturally warm and dry conditions promote frequent and devastating wildfires. 
+There are many sources of PM2.5, including vehicular emissions and ash. California's large traffic volume and increasingly frequent wildfires both contribute to the state's PM2.5 levels. While wildfires are natural, climate change is making them more common and more severe. According to the [Environmental Protection Agency](https://www.epa.gov/sites/production/files/2016-09/documents/climate-change-ca.pdf), the state of California is becoming warmer as a whole and southern California, in particular, is becoming drier. California's average annual precipitation and temperature from 1895-2017 are shown below. These unnaturally warm and dry conditions promote frequent and devastating wildfires. 
 
 ![](https://fivethirtyeight.com/wp-content/uploads/2018/11/science-fires-2.png?w=1150)
 
-California's burgeoning population has expanded into many high-risk fire zones. [TIME](http://time.com/4985252/california-wildfires-fires-climate-change/) reports on a 2017 Verisk risk analysis which found that "15% -- or over 2 million -- of California's homes [are] in high or extremely high wildfire risk zones and another 12% in moderate risk areas." Concurrently, large fires have become more common in California, as seen in the chart below. Each bar represents a single fire, and the bar height represents the size of areas burned in acres. The proximity of these populations to $\text{PM}_{2.5}$ sources such as wildfires puts them at increased risk of unhealthy exposure levels (not to mention the risks of the wildfire itself). 
+California's burgeoning population has expanded into many high-risk fire zones. [TIME](http://time.com/4985252/california-wildfires-fires-climate-change/) reports on a 2017 Verisk risk analysis which found that "15% -- or over 2 million -- of California's homes [are] in high or extremely high wildfire risk zones and another 12% in moderate risk areas." Concurrently, large fires have become more common in California, as seen in the chart below. Each bar represents a single fire, and the bar height represents the size of areas burned in acres. The proximity of these populations to PM2.5 sources such as wildfires puts them at increased risk of unhealthy exposure levels (not to mention the risks of the wildfire itself). 
 
 ![](https://www.gannett-cdn.com/experiments/usatoday/responsive/2018/ca-wildfires/img/cal-fires-1970-2017.svg)
 
-We are interested in investigating California county-level hospitalization rates as a function of the annual number of days each county had $\text{PM}_{2.5}$ levels over the national standard.
+We are interested in investigating California county-level hospitalization rates as a function of the annual number of days each county had PM2.5 levels over the national standard.
 
 ## Related Work
 
-A 2006 study by Dominici, Peng, and Bell showed that short-term exposure to $\text{PM}_{2.5}$ increases the risk for hospital admission for cardiovascular and respiratory diseases. Specifically, there was a short-term increase in hospital admission rates associated with $\text{PM}_{2.5}$ for heart disease, heart rhythm, heart failure, COPD, and respiratory infection; the largest association was for heart failure. In a 2009 paper, Neupane et al. found that long-term exposure to higher levels of nitrogen dioxide and $\text{PM}_{2.5}$ is significantly associated with hospitalization for community-aquired pneumonia among elderly patients in Hamilton, Ontario, Canada. Similarly, Ostro et al. found in 2008 that components of $\text{PM}_{2.5}$ were associated with several childhood respiratory diseases including pneumonia, bronchitis, and asthma among children in six California counties. Much work on the association of $\text{PM}_{2.5}$ with health outcomes focuses on birth outcomes or respiratory issues; we expand this exploration to all classifications of preventable hospitalization.
+A 2006 study by Dominici, Peng, and Bell showed that short-term exposure to PM2.5 increases the risk for hospital admission for cardiovascular and respiratory diseases. Specifically, there was a short-term increase in hospital admission rates associated with PM2.5 for heart disease, heart rhythm, heart failure, COPD, and respiratory infection; the largest association was for heart failure. In a 2009 paper, Neupane et al. found that long-term exposure to higher levels of nitrogen dioxide and PM2.5 is significantly associated with hospitalization for community-aquired pneumonia among elderly patients in Hamilton, Ontario, Canada. Similarly, Ostro et al. found in 2008 that components of PM2.5 were associated with several childhood respiratory diseases including pneumonia, bronchitis, and asthma among children in six California counties. Much work on the association of PM2.5 with health outcomes focuses on birth outcomes or respiratory issues; we expand this exploration to all classifications of preventable hospitalization.
 
-Bell et al. examine how air pollution control could not only prevent adverse health outcomes but also make a monumental economic impact. Air pollution control policy could help prevent over 156,000 deaths, 4 million asthma attacks, 300,000 children's medical visits, and almost 48,000 cases of chronic bronchitis over a twenty-year period in Santiago, Sao Paulo, and Mexico City; the economic value of these avoided health outcomes is about 21-165 billion USD. Fisk and Chan found in 2016 that using portable air cleaners led to economic benefits exceeding or far exceeding intervention costs. Thus, understanding how $\text{PM}_{2.5}$ is related to preventable hospitalizations can help California counties plan for intervention or even prevention efforts as well as budget for the impact of adverse health outcomes from wildfires.
+Bell et al. examine how air pollution control could not only prevent adverse health outcomes but also make a monumental economic impact. Air pollution control policy could help prevent over 156,000 deaths, 4 million asthma attacks, 300,000 children's medical visits, and almost 48,000 cases of chronic bronchitis over a twenty-year period in Santiago, Sao Paulo, and Mexico City; the economic value of these avoided health outcomes is about 21-165 billion USD. Fisk and Chan found in 2016 that using portable air cleaners led to economic benefits exceeding or far exceeding intervention costs. Thus, understanding how PM2.5 is related to preventable hospitalizations can help California counties plan for intervention or even prevention efforts as well as budget for the impact of adverse health outcomes from wildfires.
 
 ## Initial Questions
 
-Our primary research question is what, if any, is the effect of $\text{PM}_{2.5}$ on hospitalization rates in California? We further want to investigate how this effect differs by medical condition. Additional questions relevant to the analysis are (1) to what extent is hospitalization rate spatially or temporally correlated, and (2) to what extent is the predictor $\text{PM}_{2.5}$ spatially or temporally correlated?
+Our primary research question is what, if any, is the effect of PM2.5 on hospitalization rates in California? We further want to investigate how this effect differs by medical condition. Additional questions relevant to the analysis are (1) to what extent is hospitalization rate spatially or temporally correlated, and (2) to what extent is the predictor PM2.5 spatially or temporally correlated?
 
 ## Data
 
-We obtained our health-related data from the [California Health and Human Services Open Data Portal](https://data.chhs.ca.gov/dataset/rates-of-preventable-hospitalizations-for-selected-medical-conditions-by-county). The data contain annual hospitalization rates by county for a selection of preventable medical conditions. The rates are calculated using ICD-9 and ICD-10 codes and then standardized to the number of hospitalizations per 100,000 individuals. We obtained our air quality-related data from the [California Air Resources Board](https://www.arb.ca.gov/adam/index.html). The data include $\text{PM}_{2.5}$ levels by county. To match the granularity of our health data, we chose to use the annual days above the national 24-hour standard as our air quality metric. We also obtained county-level demographic data to control for any potential effect of demographic features on hospitalization rates; these data were obtained from the [US Census Bureau](https://factfinder.census.gov/faces/nav/jsf/pages/searchresults.xhtml?refresh=t&keepList=f).
+We obtained our health-related data from the [California Health and Human Services Open Data Portal](https://data.chhs.ca.gov/dataset/rates-of-preventable-hospitalizations-for-selected-medical-conditions-by-county). The data contain annual hospitalization rates by county for a selection of preventable medical conditions. The rates are calculated using ICD-9 and ICD-10 codes and then standardized to the number of hospitalizations per 100,000 individuals.
+
+```{r Read in data 1 (Ruthe)}
+rm(list = ls())
+library(tidyverse); library(lubridate); library(stringr); library(stringr); library(rgdal); library("SpatioTemporal"); library("sp"); library("mgcv"); library("spdep"); library("CARBayesST"); library("ape"); library(kableExtra)
+
+phosp <- read_csv("data/ca-oshpd-preventablehospitalizations-county-2005-2017.csv")
+ph_early <- phosp %>% filter(Year < 2016) %>% group_by(County, Year) %>% dplyr::select(Year, County, PQIDescription, ObsRate_ICD9) %>% spread(PQIDescription, value = ObsRate_ICD9) %>% rename(diabetes_st = "Diabetes Short-term Complications", perf_appendix = "Perforated Appendix", diabetes_lt = "Diabetes Long-term Complications", asthma_older = "COPD or Asthma in Older Adults (Age 40+)", hypertension = "Hypertension", heart_fail = "Heart Failure", dehydration = "Dehydration", pneumonia = "Community-Acquired Pneumonia", uti = "Urinary Tract Infection", angina = "Angina without Procedure", diabetes_uc = "Uncontrolled Diabetes", asthma_young = "Asthma in Younger Adults (Age 18-39)", amputation_diab = "Lower-Extremity Amputation (Diabetes)", pq_overall = "Prevention Quality Overall Composite", pq_acute = "Prevention Quality Acute Composite", pq_chronic = "Prevention Quality Chronic Composite") %>% mutate(pq_diabetes = NA)
+
+ph_late <- phosp %>% filter(Year >= 2016) %>% group_by(County, Year) %>% dplyr::select(Year, County, PQIDescription, ObsRate_ICD10) %>% spread(PQIDescription, value = ObsRate_ICD10) %>% rename(asthma_older = "COPD or Asthma in Older Adults (Age 40+)", diabetes_st = "Diabetes Short-term Complications", perf_appendix = "Perforated Appendix", diabetes_lt = "Diabetes Long-term Complications", hypertension = "Hypertension", heart_fail = "Heart Failure", dehydration = "Dehydration", pneumonia = "Community-Acquired Pneumonia", uti = "Urinary Tract Infection", diabetes_uc = "Uncontrolled Diabetes", asthma_young = "Asthma in Younger Adults (Age 18-39)", amputation_diab = "Lower-Extremity Amputation (Diabetes)", pq_overall = "Prevention Quality Overall Composite", pq_acute = "Prevention Quality Acute Composite", pq_chronic = "Prevention Quality Chronic Composite", pq_diabetes = "Prevention Quality Diabetes Composite") %>% mutate(angina = NA)
+
+phosp <- rbind(ph_early, ph_late) %>% arrange(County) %>% rename(county = County, year = Year)
+head(phosp)
+```
+
+We obtained our air quality-related data from the [California Air Resources Board](https://www.arb.ca.gov/adam/index.html). The data include PM2.5 levels by county. To match the granularity of our health data, we chose to use the annual days above the national 24-hour standard as our air quality metric.
+
+```{r Read in data 2 (Ruthe)}
+pm25 <- read_csv("data/pm25_annual-days-above-nat-24-hr-stnd.csv", na = "*") %>% group_by(county) %>% summarize(pm2010 = mean(pm2010, na.rm = T), pm2011 = mean(pm2011, na.rm = T), pm2012 = mean(pm2012, na.rm = T), pm2013 = mean(pm2013, na.rm = T), pm2014 = mean(pm2014, na.rm = T), pm2015 = mean(pm2015, na.rm = T), pm2016 = mean(pm2016, na.rm = T), pm2017 = mean(pm2017, na.rm = T)) %>% gather(year, pm25, pm2010:pm2017) %>% mutate(year = as.numeric(str_sub(year, 3, 6))) %>% arrange(county)
+head(pm25)
+```
+
+We also obtained county-level demographic data to control for any potential effect of demographic features on hospitalization rates; these data were obtained from the [US Census Bureau](https://factfinder.census.gov/faces/nav/jsf/pages/searchresults.xhtml?refresh=t&keepList=f).
+
+```{r Read in data 3 (Ruthe)}
+demo <- read_csv("data/age_edu_race.csv")[ , -1] %>% group_by(Geography, Year) %>% filter(bachelor_perc <= 100) %>% summarize(age60_perc = mean(age60_perc, na.rm = T), bachelor_perc = mean(bachelor_perc, na.rm = T), est.white.percent = mean(est.white.percent, na.rm = T), est.black.percent = mean(est.black.percent, na.rm = T)) %>% ungroup() %>% mutate(Geography = str_sub(Geography, 1, -20)) %>% rename(county = Geography, year = Year)
+head(demo)
+```
 
 We merged the above datasets by county and year. The air quality data were only from the years 2010-2017, so we excluded any additional years from the other two datasets. Next, we checked each variable for unreasonable values. There were some values in the demographic data variables that were unreasonable (e.g. percentiles above 100\% describing a county's estimated percent of black residents); we excluded these rows.
 
+```{r Read in data 4 (Ruthe)}
+dat <- demo %>% left_join(pm25, by = c("county", "year")) %>% left_join(phosp, by = c("county", "year")) %>% mutate(region = NA, region = replace(region, county %in% c("Del Norte", "Humboldt", "Mendocino", "Lake", "Siskiyou", "Trinity", "Shasta", "Tehema", "Butte", "Yuba",
+"Sacramento", "Modoc", "Lassen"), "northern"), region = replace(region, county %in% c("Sonoma", "Marin", "Solano", "Napa", "Yolo", "Contra Costa", "Alameda", "San Mateo", "Santa Clara", "Santa Cruz", "San Benito", "Monterey", "San Luis Obispo", "Santa Barbara", "Ventura", "Orange", "San Diego", "Riverside", "Sierra", "Nevada", "Placer", "El Dorado", "Amador", "Mono"), "coastal"), region = replace(region, county %in% c("Alpine", "Calaveras", "Tuolumne", "Mariposa", "Inyo"), "motherlode"), region = replace(region, county %in% c("Glenn", "Colusa", "Sutter", "San Joaquin", "Stanislaus", "Merced", "Madera", "Fresno", "Kings", "Tulare", "Kern", "Los Angeles", "San Bernardino"), "farm"), region = replace(region, county == "San Francisco", "sanfrancisco"), region = replace(region, county == "Imperial", "imperial"))
+
+# save(dat, file = "data/dat.R")
+rm(list = setdiff(ls(), "dat"))
+head(dat)
+```
+
 The data were originally in long format; each row represented a county, year, and medical condition combination. We spread the data to wide format so that each medical condition had its own column containing its associated annual hospitalization rates. The new dataframe had a row for each county and year combination. This dataframe was used for all subsequent analyses. 
 
-```{r (Xinye) packages that I will be using, message = FALSE, warning = FALSE}
-library("SpatioTemporal"); library("sp"); library("mgcv") #we need "gam" function
-library("ggplot2"); library("knitr"); library("dplyr"); library("ape") #moran's I
-library("spdep"); library("CARBayesST")
+```{r maps (Ruthe)}
+cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
+cali$NAME <- as.character(cali$NAME)
 ```
 
 ```{r (Xinye) data for EDA and GAM, message = FALSE, warning=FALSE}
@@ -80,7 +115,7 @@ datnew <- left_join(dat,loc.all,by = "county") %>%
 ## Exploratory Data Analysis
 
 #### 1. Spatial and temporal pattern for PM2.5
-$\text{PM}_{2.5}$ levels vary across different regions with high variability in the farm region and lower variability across counties in other regions. The temporal patterns for $\text{PM}_{2.5}$ are also heterogeneous across regions and counties.
+PM2.5 levels vary across different regions with high variability in the farm region and lower variability across counties in other regions. The temporal patterns for PM2.5 are also heterogeneous across regions and counties.
 
 ```{r (Xinye) EDA, warning = FALSE, message = FALSE}
 
@@ -98,7 +133,7 @@ plot_pm25_time
 
 #### Spatial autocorrelation 
 
-Our data are correlated because of their intrinsic geographical clustering. We start with a Generalized Linear Model (GLM) which assumes independence of data and we test the existence of spatial autocorrelations among residuals via Moran's I Index. 9 out of 17 causes of the preventable hospitalization rate are spatially autocorrelated. Hospitalization causes for which we fail to detect spatial autocorrelation after accounting $\text{PM}_{2.5}$ and other covariates include angina, dehydration, diabetes short-term complications, hypertension, lower-extremity amputation, perforated appendix, uncontrolled diabetes, and prevention quality diabetes composite.
+Our data are correlated because of their intrinsic geographical clustering. We start with a Generalized Linear Model (GLM) which assumes independence of data and we test the existence of spatial autocorrelations among residuals via Moran's I Index. 9 out of 17 causes of the preventable hospitalization rate are spatially autocorrelated. Hospitalization causes for which we fail to detect spatial autocorrelation after accounting PM2.5 and other covariates include angina, dehydration, diabetes short-term complications, hypertension, lower-extremity amputation, perforated appendix, uncontrolled diabetes, and prevention quality diabetes composite.
 
 ```{r (Xinye) Morans I-testing spatial autocorrelation, message = FALSE, warning = FALSE}
 ca.dists <- as.matrix(dist(cbind(datnew$long, datnew$lat)))
@@ -142,7 +177,7 @@ for (i in 1:17){
 
 #### Linearity of spatial and temporal patterns 
 
-We used the Generalized Additive Model (GAM) with splines in both geographical locations and years to test the linearity of spatial and temporal trends for $\text{PM}_{2.5}$. Both the spatial and the temporal pattern of $\text{PM}_{2.5}$ are non-linear.
+We used the Generalized Additive Model (GAM) with splines in both geographical locations and years to test the linearity of spatial and temporal trends for PM2.5. Both the spatial and the temporal pattern of PM2.5 are non-linear.
 
 ```{r (Xinye) gam-testing linearity of spatial and temporal trend for pm2.5, message = FALSE,warning = FALSE}
 
@@ -281,47 +316,12 @@ car.model("asthma_young")
 
 ## All Ruthe's code
 
-```{r Read in data, eval = F}
-rm(list = ls())
-library(tidyverse); library(lubridate); library(stringr); library(rgdal)
 
-# read in 2010-2017 California air quality data
-pm25 <- read_csv("data/pm25_annual-days-above-nat-24-hr-stnd.csv", na = "*") %>% group_by(county) %>% summarize(pm2010 = mean(pm2010, na.rm = T), pm2011 = mean(pm2011, na.rm = T), pm2012 = mean(pm2012, na.rm = T), pm2013 = mean(pm2013, na.rm = T), pm2014 = mean(pm2014, na.rm = T), pm2015 = mean(pm2015, na.rm = T), pm2016 = mean(pm2016, na.rm = T), pm2017 = mean(pm2017, na.rm = T)) %>% gather(year, pm25, pm2010:pm2017) %>% mutate(year = as.numeric(str_sub(year, 3, 6))) %>% arrange(county)
-head(pm25)
-
-demo <- read_csv("data/age_edu_race.csv")[ , -1] %>% group_by(Geography, Year) %>% filter(bachelor_perc <= 100) %>% summarize(age60_perc = mean(age60_perc, na.rm = T), bachelor_perc = mean(bachelor_perc, na.rm = T), est.white.percent = mean(est.white.percent, na.rm = T), est.black.percent = mean(est.black.percent, na.rm = T)) %>% ungroup() %>% mutate(Geography = str_sub(Geography, 1, -20)) %>% rename(county = Geography, year = Year)
-head(demo)
-
-phosp <- read_csv("data/ca-oshpd-preventablehospitalizations-county-2005-2017.csv")
-ph_early <- phosp %>% filter(Year < 2016) %>% group_by(County, Year) %>% select(Year, County, PQIDescription, ObsRate_ICD9) %>% spread(PQIDescription, value = ObsRate_ICD9) %>% rename(diabetes_st = "Diabetes Short-term Complications", perf_appendix = "Perforated Appendix", diabetes_lt = "Diabetes Long-term Complications", asthma_older = "COPD or Asthma in Older Adults (Age 40+)", hypertension = "Hypertension", heart_fail = "Heart Failure", dehydration = "Dehydration", pneumonia = "Community-Acquired Pneumonia", uti = "Urinary Tract Infection", angina = "Angina without Procedure", diabetes_uc = "Uncontrolled Diabetes", asthma_young = "Asthma in Younger Adults (Age 18-39)", amputation_diab = "Lower-Extremity Amputation (Diabetes)", pq_overall = "Prevention Quality Overall Composite", pq_acute = "Prevention Quality Acute Composite", pq_chronic = "Prevention Quality Chronic Composite") %>% mutate(pq_diabetes = NA)
-
-ph_late <- phosp %>% filter(Year >= 2016) %>% group_by(County, Year) %>% select(Year, County, PQIDescription, ObsRate_ICD10) %>% spread(PQIDescription, value = ObsRate_ICD10) %>% rename(asthma_older = "COPD or Asthma in Older Adults (Age 40+)", diabetes_st = "Diabetes Short-term Complications", perf_appendix = "Perforated Appendix", diabetes_lt = "Diabetes Long-term Complications", hypertension = "Hypertension", heart_fail = "Heart Failure", dehydration = "Dehydration", pneumonia = "Community-Acquired Pneumonia", uti = "Urinary Tract Infection", diabetes_uc = "Uncontrolled Diabetes", asthma_young = "Asthma in Younger Adults (Age 18-39)", amputation_diab = "Lower-Extremity Amputation (Diabetes)", pq_overall = "Prevention Quality Overall Composite", pq_acute = "Prevention Quality Acute Composite", pq_chronic = "Prevention Quality Chronic Composite", pq_diabetes = "Prevention Quality Diabetes Composite") %>% mutate(angina = NA)
-
-phosp <- rbind(ph_early, ph_late) %>% arrange(County) %>% rename(county = County, year = Year)
-
-# label counties by clustering algorithm
-dat <- demo %>% left_join(pm25, by = c("county", "year")) %>% left_join(phosp, by = c("county", "year")) %>% mutate(region = NA, region = replace(region, county %in% c("Del Norte", "Humboldt", "Mendocino", "Lake", "Siskiyou", "Trinity", "Shasta", "Tehema", "Butte", "Yuba",
-"Sacramento", "Modoc", "Lassen"), "northern"), region = replace(region, county %in% c("Sonoma", "Marin", "Solano", "Napa", "Yolo", "Contra Costa", "Alameda", "San Mateo", "Santa Clara", "Santa Cruz", "San Benito", "Monterey", "San Luis Obispo", "Santa Barbara", "Ventura", "Orange", "San Diego", "Riverside", "Sierra", "Nevada", "Placer", "El Dorado", "Amador", "Mono"), "coastal"), region = replace(region, county %in% c("Alpine", "Calaveras", "Tuolumne", "Mariposa", "Inyo"), "motherlode"), region = replace(region, county %in% c("Glenn", "Colusa", "Sutter", "San Joaquin", "Stanislaus", "Merced", "Madera", "Fresno", "Kings", "Tulare", "Kern", "Los Angeles", "San Bernardino"), "farm"), region = replace(region, county == "San Francisco", "sanfrancisco"), region = replace(region, county == "Imperial", "imperial"))
-
-# # label counties by CDSS groups
-# dat <- demo %>% left_join(pm25, by = c("county", "year")) %>% left_join(phosp, by = c("county", "year")) %>% mutate(region = NA, region = replace(region, county %in% c("Alameda", "Contra Costa", "Marin", "Napa", "San Francisco", "San Mateo", "Santa Clara", "Santa Cruz", "Solano", "Sonoma"), "bayarea"), region = replace(region, county %in% c("Orange", "Riverside", "San Bernardino", "San Diego", "Santa Barbara", "Ventura"), "socal"), region = replace(region, county == "Los Angeles", "losangeles"), region = replace(region, county %in% c("Fresno", "Imperial", "Kern", "Kings", "Madera", "Merced", "Monterey", "San Benito", "San Joaquin", "San Luis Obispo", "Stanislaus", "Tulare"), "csfarm"), region = replace(region, county %in% c("Alpine", "Amador", "Butte", "Calaveras", "Del Norte", "Glenn", "Humboldt", "Inyo", "Lake", "Lassen", "Mariposa", "Mendocino", "Modoc", "Mono", "Nevada", "Plumas", "Shasta", "Sierra", "Siskiyou", "Tehama", "Trinity", "Tuolumne"), "nmountain"), region = replace(region, county %in% c("Colusa", "El Dorado", "Placer", "Sacramento", "Sutter", "Yolo", "Yuba"), "centralvalley"))
-
-# save(dat, file = "data/dat.R")
-rm(list = setdiff(ls(), "dat"))
-```
 
 ```{r CA visualizations}
-rm(list = ls())
-library(tidyverse); library(lubridate); library(stringr); library(rgdal)
-
-load("data/dat.R")
-cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
-cali$NAME <- as.character(cali$NAME)
-# plot(cali)
-
 caplot <- function(yr, var, cutoffs = NULL) #year: numeric input, var: character input
 {
-  df <- dat %>% filter(year == yr) %>% select(county, var)
+  df <- dat %>% filter(year == yr) %>% dplyr::select(county, var)
   map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
   if (length(cutoffs) == 0)
   {
@@ -340,7 +340,7 @@ caplot <- function(yr, var, cutoffs = NULL) #year: numeric input, var: character
 
 pmplot <- function(yr) # special function for PM 2.5 plots
 {
-  df <- dat %>% filter(year == yr) %>% select(county, pm25)
+  df <- dat %>% filter(year == yr) %>% dplyr::select(county, pm25)
   map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
   cols <- as.character(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T, labels = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy")))
   
@@ -385,7 +385,7 @@ bigplot <- function(var, cut = NULL, omit = F)
 }
 ```
 
-## Days Over National $\text{PM}_{2.5}$ Standard by County Over Time
+## Days Over National PM2.5 Standard by County Over Time
 
 ```{r, fig.height = 9, fig.width = 14}
 par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
@@ -517,13 +517,13 @@ datnew = left_join(dat,loc.all,by = "county") %>%
 
 #outcome data for all categories
 outcome_data <- datnew %>%  
-  select(-age60_perc,-bachelor_perc,
+  dplyr::select(-age60_perc,-bachelor_perc,
          -est.white.percent,-est.black.percent,-pm25)
 
 #Let's say we pick dehydration as an outcome
 #dehydration only, wide format
 #matrix
-outcome_dehy <- outcome_data %>% select(ID,year, dehydration) %>%
+outcome_dehy <- outcome_data %>% dplyr::select(ID,year, dehydration) %>%
   spread(key = ID,value = dehydration)
 
 outcome_dehydration <- as.matrix(outcome_dehy[,-1],nrow = 8)
@@ -533,7 +533,7 @@ colnames(outcome_dehydration) = unique(datnew$county)
 #convarites (non-time-varying): I chose 2015 (this may change later)
 #data.frame
 covariate <- datnew %>% filter(year == 2015)  %>%
-  select(ID,x,y,lat,long,age60_perc,bachelor_perc,
+  dplyr::select(ID,x,y,lat,long,age60_perc,bachelor_perc,
          est.white.percent,est.black.percent) %>%
   mutate(type = factor(rep(1,n())))
 
@@ -542,7 +542,7 @@ covariate <- datnew %>% filter(year == 2015)  %>%
 
 #time-varying covariate: pm25
 #matrix
-stcov = datnew %>% select(year,ID,pm25) %>% spread(key = ID,value = pm25)
+stcov = datnew %>% dplyr::select(year,ID,pm25) %>% spread(key = ID,value = pm25)
 stcov <- as.matrix(stcov[,-1],nrow = 8)
 rownames(stcov) = c(2010,2011,2012,2013,2014,2015,2016,2017)
 colnames(stcov) = unique(datnew$county)
@@ -569,7 +569,7 @@ createSTmodel(st_dehy_obj, LUR = LUR, ST = ST, cov.beta = cov.beta,
 
 ```
 
-Limitation: lot of zeros for days above national $\text{PM}_{2.5}$ standard
+Limitation: lot of zeros for days above national PM2.5 standard
 
 
 

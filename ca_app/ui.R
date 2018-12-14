@@ -86,6 +86,12 @@ shinyUI(
                 fluidRow(
                   column(width = 12,
                          uiOutput("video"))
+                ),
+                fluidRow(
+                  column(width = 8,
+                         box(title = h4("Why did we make this app?", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, p("Nearly 90 million Americans are breathing air that doesn't meet the World Health Oranizations safe PM2.5 limit. The UK Department for Environment, Food & Rural Affairs states that long-term PM2.5 exposure poses a variety of health risks; most commonly, health consequences due to long-term PM2.5 exposure take the form of cardiovascular or respiratory diseases. This poses a serious public health problem because such diseases reduce both quality and length of life.", style = 'color: white; font-size: 10pt; font-family: Cabin', class = 'tab'),
+                             p("There are many sources of PM2.5, including vehicular emissions and ash. California's large traffic volume and increasingly frequent wildfires both contribute to the state's PM2.5 levels. While wildfires are natural, climate change is making them more common and more severe. According to the Environmental Protection Agency, the state of California is becoming warmer as a whole and southern California, in particular, is becoming drier. These unnaturally warm and dry conditions promote frequent and devastating wildfires.)", style = 'color: white; font-size: 10pt; font-family: Cabin', class = 'tab'),
+                             p("We are interested in investigating California county-level hospitalization rates as a function of the annual number of days each county had PM2.5 levels over the national standard.")))
                 )
                 )
       ))
