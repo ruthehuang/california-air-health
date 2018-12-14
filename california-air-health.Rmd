@@ -256,7 +256,8 @@ plot_pm25_time <- datnew %>% group_by(year, county) %>% filter(!is.na(pm25)) %>%
   facet_wrap(.~region,ncol = 5) + 
   labs(title = "Temporal trends of PM2.5 across regions") +
   theme_bw() +
-  theme(plot.title = element_text(hjust = 0.5,size = 10))
+  theme(plot.title = element_text(hjust = 0.5,size = 10),
+        legend.position = "bottom")
 
 plot_pm25_time
 ```
@@ -360,21 +361,32 @@ kable(tb_outcome_st, caption = "Spatio-temporal trends for all outcomes")
 
 ## Data Analysis
 
-#### 1. Bayes CAR Model
+####1. Emily's Model
+
+#### 2. Bayes CAR Model
 To further study the overall effect of PM2.5 on preventable hospitalization, we use a Bayesian hierarchical model with random effects estimated from a Conditional Autoregressive (CAR) model. More specifically, we consider a CAR(1) model to represent the spatiotemporal random effects structure with hyperparameters from Uniform and Inverse Gamma distributions. 
 
-Markov Chain Monte Carlo (MCMC) simulation is implemented to make the inference.  We generate 50500 MCMC samples and discard the first 500 samples. To eliminate the autocorrelations from the Markov Chain, the MCMC sample is thinned by 10 with resulting 5000 post-burn-in and thinned samples. 
+Markov Chain Monte Carlo (MCMC) simulation with 50500 samples is implemented to make the inference. To eliminate the instability and autocorrelations from the Markov Chain, the first 500 samples are discarded and the sequence is thinned by 10 with resulting 5000 post-burn-in and thinned samples. 
 
 The Bayes CAR model estimates the aggregated effect of PM2.5 on preventable hospitalization of different causes in California. The spatiotemporal correlation has been taken into account in estimation, and therefore, the results are more reasonable comparing to models without considerations of spatiotemporal effects.
 
 
 ## Results and Summary
 
+#### Emily's results
 
 
-#### CAR Model results (this should go last)
+#### Bayes CAR Model results 
 
-```{r (Xinye) CAR model, message = FALSE, warning = FALSE, cache = T}
+For the Bayes CAR model, we apply the same formula as the GLMM. We use the default priors for hyperparameters of the spatiotemporal random effects, and they are from Uniform(0,1) and Inverse Gamma (1, 0.001), respectively. 
+
+We detect some positive associations between PM2.5 level and the preventable hospitalization rate resulting from asthma among young adults (age 18-39), asthma among older adults (age 40+), short-term diabetes complications, heart failure, and pneumonia.
+
+For every additional day over the national PM2.5 standard, we expect the hospitalization rates due to asthma among young adults (age 18-39) and older adults (age 40+)/COPD patients to increase by 0.27 (95% Credible Interval: (0.09,0.43)) and 4.83 (95% Credible Interval: (3.31,6.3)). 
+
+We also expect the hospitalization rates caused by short-term diabetes complications, heart failure, and pneumonia to increase by 0.93 (95% Credible Interval: (0.65,1.22)), 1.28 (95% Credible Interval: (0.22,2.31)), and 1.44 (95% Credible Interval: (0.61,2.25)) with every additional day over the national PM2.5 standard, respectively. 
+
+```{r (Xinye) CAR model, message = FALSE, warning = FALSE, cache = T,results = 'hide',include = FALSE}
 #1. prepare data for CAR model: need to delete counties with NAs in pm25
 dat_car <- datnew %>% filter(!county %in% c("Yuba","El Dorado"))
 
@@ -412,6 +424,7 @@ car.model <- function(y,data = dat_car){
       dplyr::select(outcome_interest,year,age60_perc,est.black.percent,
              bachelor_perc,pm25)
     
+    set.seed(1214)
     fitst_adapt <- ST.CARadaptive(outcome_interest~pm25 + age60_perc + 
                                     est.black.percent +
                                     bachelor_perc + year, 
@@ -433,16 +446,30 @@ car.model <- function(y,data = dat_car){
   }
 }
 
-# say, we are interested in the following 3 causes 
-car.model("pneumonia")
-car.model("asthma_older")
-car.model("asthma_young")
+# say, we are interested in the following 5 causes 
+car_pneumonia <- car.model("pneumonia")
+car_asthma_older <- car.model("asthma_older")
+car_asthma_young <- car.model("asthma_young")
+car_heart_failure <- car.model("heart_fail")
+car_diabetes_st <- car.model("diabetes_st")
 ```
 
-Limitation: lot of zeros for days above national PM2.5 standard
+
+```{r (Xinye) CAR results, warning = FALSE, message = FALSE}
+car_pneumonia
+car_asthma_older
+car_asthma_young 
+car_heart_failure
+car_diabetes_st
+```
 
 
+Limitation: 
+1. lot of zeros for days above national PM2.5 standard
 
+2. In Bayes CAR model, an adjacency matrix that represents neighboring counties is required. However, due to a limited number of counties in our data, Shasta County is isolated with no neighbor to share the border with. Therefore, we make two closet counties: Butte and Mendocino as neighbors of Shasta and this might affect the accuracy of our estimation.
+
+3. There is some missingness of PM2.5 level in some counties and is not allowed in Bayes CAR model. We manually inputted the missing PM2.5 values based on values in the previous two years. Therefore, we potentially lose some temporal trends for PM2.5 that leads to biased estimates.
 
 
 
