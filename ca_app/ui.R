@@ -20,7 +20,8 @@ shinyUI(
       checkboxInput("quintile", label = "Color maps by quintiles", value = F),
       sidebarMenu(
         menuItem(HTML("<p style = 'font-family: Cabin; color:white;'>By Year</p>"), tabName = "single"),
-        menuItem(HTML("<p style = 'font-family: Cabin; color:white;'>Over All Years</p>"), tabName = "continuous")
+        menuItem(HTML("<p style = 'font-family: Cabin; color:white;'>Over All Years</p>"), tabName = "continuous"),
+        menuItem(HTML("<p style = 'font-family: Cabin; color:white;'>About this Project</p>"), tabName = "about")
       )
     ),
     dashboardBody(
@@ -29,7 +30,7 @@ shinyUI(
                       
                 .main-header .logo {
                 font-family: 'Abril Fatface', cursive;
-                font-size: 40px;
+                font-size: 40px;,
                 background:#F5FFFA;
                 }
                       
@@ -80,6 +81,12 @@ shinyUI(
                   column(width = 8,
                          box(title = h4("PM 2.5 Levels", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("pmmap_big")))
                 )
-        )
+        ),
+        tabItem(tabName = "about",
+                fluidRow(
+                  column(width = 12,
+                         uiOutput("video"))
+                )
+                )
       ))
 ))

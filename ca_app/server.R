@@ -60,6 +60,10 @@ shinyServer(
       list(src = outfile, contentType = 'image/gif', width = 500, height = 500)
     }, deleteFile = T)
     
+    output$video <- renderUI({
+        HTML('<iframe width="1280" height="720" src="https://www.youtube.com/embed/EF-9I38ud4s" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')
+    })
+    
     # output$pmmap_cont <- renderImage({
     #   outfile <- tempfile(fileext = '.gif')
     #   

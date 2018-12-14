@@ -1,4 +1,4 @@
-library(shiny); library(shinydashboard); library(dplyr); library(rgdal); library(animation); library(rlist)
+library(shiny); library(shinydashboard); library(dplyr); library(rgdal); library(animation); library(rlist); library(memisc)
 
 load("data/dat.R")
 cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
