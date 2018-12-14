@@ -199,8 +199,12 @@ kable(tb_outcome_st, caption = "Spatio-temporal trends for all outcomes")
 
 
 
-#### CAR Model (Xinye): explain what it is and why
+#### Bayes CAR Model
+To further study the overall effect of PM2.5 on preventable hospitalization, we use a Bayesian hierarchical model with random effects estimated from a Conditional Autoregressive (CAR) model. More specifically, we consider a CAR(1) model to represent the spatiotemporal random effects structure with hyperparameters from Uniform and Inverse Gamma distributions. 
 
+Markov Chain Monte Carlo (MCMC) simulation is implemented to make the inference.  We generate 50500 MCMC samples and discard the first 500 samples. To eliminate the autocorrelations from the Markov Chain, the MCMC sample is thinned by 10 with resulting 5000 post-burn-in and thinned samples. 
+
+The Bayes CAR model estimates the aggregated effect of PM2.5 on preventable hospitalization of different causes in California. The spatiotemporal correlation has been taken into account in estimation, and therefore, the results are more reasonable comparing to models without considerations of spatiotemporal effects.
 
 
 ## Results and Summary
@@ -263,13 +267,15 @@ car.model <- function(y,data = dat_car){
     var_name <- c("pm25","Age>60 (%)", "Black (%)", ">Bachelor (%)")
     model_summary <- cbind(var_name, point_estimate, CI)
     colnames(model_summary) <- c("","Estimate","95% Credible Interval")
-    tb <- kable(model_summary)
+    tb <- kable(model_summary, caption = paste("Bayes CAR results for",y))
     return(tb)
   }
 }
 
-# we need to decide which outcome to present
-#car.model("diabetes_lt")
+# say, we are interested in the following 3 causes 
+car.model("pneumonia")
+car.model("asthma_older")
+car.model("asthma_young")
 ```
 
 
