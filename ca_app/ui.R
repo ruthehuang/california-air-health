@@ -70,8 +70,12 @@ shinyUI(
                          box(title = h4("PM 2.5 Levels", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("pmmap")))
                 ),
                 fluidRow(
+                  column(width = 6,
+                         box(title = h4("Year Plot", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("plotyear_eda"))),
+                  column(width = 6,
+                         box(title = h4("PM2.5 Plot", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("plotpm25_eda"))),
                   column(width = 12,
-                         box(title = h4("Analysis", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, p("Analysis things will go here", style = 'color: white; font-size: 10pt; font-family: Cabin', class = 'tab')))
+                         box(title = h4("Analysis", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 500, p("Analysis things will go here", style = 'color: white; font-size: 10pt; font-family: Cabin', class = 'tab')))
                 )
                 ),
         tabItem(tabName = "continuous",

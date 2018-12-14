@@ -60,23 +60,17 @@ shinyServer(
       list(src = outfile, contentType = 'image/gif', width = 500, height = 500)
     }, deleteFile = T)
     
+    output$plotyear_eda <- renderPlot({
+      plot_fx(input$outcome, "year")
+    }, height = 500)
+    
+    output$plotpm25_eda <- renderPlot({
+      plot_fx(input$outcome, "pm25")
+    }, height = 500)
+    
     output$video <- renderUI({
         HTML('<iframe width="1280" height="720" src="https://www.youtube.com/embed/EF-9I38ud4s" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')
     })
-    
-    # output$pmmap_cont <- renderImage({
-    #   outfile <- tempfile(fileext = '.gif')
-    #   
-    #   saveGIF({
-    #     ani.options(nmax = 7, interval = 2)
-    #     for (y in 2010:2017)
-    #     {
-    #       pmplot(yr = y)
-    #     }
-    #   }, movie.name = outfile, ani.width = 800, ani.height = 500)
-    #   
-    #   list(src = outfile, contentType = 'image/gif', width = 800, height = 500)
-    # }, deleteFile = T)
     
   }
 )
