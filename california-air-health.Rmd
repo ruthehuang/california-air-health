@@ -11,44 +11,52 @@ knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.align = "center
 
 ## Motivation and Overview
 
-Wildfires are a natural, annual occurrence in California. However, climate change has helped California's wildfires more intense, with the warm and dry conditions creating ideal conditions for wildfire. According to the Environmental Protection Agency, the state of California is becoming warmer as a whole; preceding both 2017 and 2018 wildfires were some of the state's highest temperatures in history.
+Nearly [90 million Americans](https://i.redd.it/bbnxf9b8rm321.jpg) are breathing air that doesn't meet the World Health Oranizations safe $\text{PM}_{2.5}$ limit. The [UK Department for Environment, Food & Rural Affairs](https://laqm.defra.gov.uk/public-health/pm25.html) states that long-term $\text{PM}_{2.5}$ exposure poses a variety of health risks; most commonly, health consequences due to long-term $\text{PM}_{2.5}$ exposure take the form of cardiovascular or respiratory diseases. This poses a serious public health problem because such diseases reduce both quality and length of life. 
 
-Predictably, large fires have become more common in California, as seen in the chart below. Each bar represents a single fire, and the bar height represents the size of areas burned, in acres.
+There are many sources of $\text{PM}_{2.5}$, including vehicular emissions and ash. California's large traffic volume and increasingly frequent wildfires both contribute to the state's $\text{PM}_{2.5}$ levels. While wildfires are natural, climate change is making them more common and more severe. According to the [Environmental Protection Agency](https://www.epa.gov/sites/production/files/2016-09/documents/climate-change-ca.pdf), the state of California is becoming warmer as a whole and southern California, in particular, is becoming drier. California's average annual precipitation and temperature from 1895-2017 are shown below. These unnaturally warm and dry conditions promote frequent and devastating wildfires. 
+
+![](https://fivethirtyeight.com/wp-content/uploads/2018/11/science-fires-2.png?w=1150)
+
+California's burgeoning population has expanded into many high-risk fire zones. [TIME](http://time.com/4985252/california-wildfires-fires-climate-change/) reports on a 2017 Verisk risk analysis which found that "15% -- or over 2 million -- of California's homes [are] in high or extremely high wildfire risk zones and another 12% in moderate risk areas." Concurrently, large fires have become more common in California, as seen in the chart below. Each bar represents a single fire, and the bar height represents the size of areas burned in acres. The proximity of these populations to $\text{PM}_{2.5}$ sources such as wildfires puts them at increased risk of unhealthy exposure levels (not to mention the risks of the wildfire itself). 
 
 ![](https://www.gannett-cdn.com/experiments/usatoday/responsive/2018/ca-wildfires/img/cal-fires-1970-2017.svg)
 
-Fires now tend to be associated with more human risk due to urban expansion into high-risk fire zones. California's population increasingly tends to live in proximity to high-risk fire corridors; as a result, wildfires more frequently devastate settled areas. The number of properties at risk of wildfire threat is estimated by Villanova University to be nearly 7 million, a more than 1000% increase in the number of homes and developed land in areas prone to wildfires since 1940. California's 2018 Camp Fire completely destroyed Paradise, CA, the second-largest city in Butte County with a population of about 26,682. A 2017 Verisk risk analysis puts 15% -- or over 2 million -- of California's homes in high or extremely high wildfire risk zones and another 12% in moderate risk areas; this means more than a quarter of the state's homes are at moderate to extremely high risk of being damaged in a wildfire.
-
-The extent of risk undeniably poses a huge task for California firefighters. Historically, Southern California firefighters were able to depend on help from Northern California partners, since Northern California would have already started to see rainfall or even snow. However with statewide climate change, both northern and southern California fires continue to be disastrous and necessitate abundant resources.
+We are interested in investigating California county-level hospitalization rates as a function of the annual number of days each county had $\text{PM}_{2.5}$ levels over the national standard.
 
 ## Related Work
 
-A 2006 study by Dominici, Peng, and Bell showed that short-term exposure to $\text{PM}_{2.5}$ increases the risk for hospital admission for cardiovascular and respiratory diseases. Specifically, there was a short-term increase in hospital admission rates associated with $\text{PM}_{2.5}$  for heart disease, heart rhythm, heart failure, COPD, and respiratory infection; the largest association was for heart failure. In a 2009 paper, Neupane et al. found that long-term exposure to higher levels of nitrogen dioxide and $\text{PM}_{2.5}$ is significantly associated with hospitalization for community-aquired pneumonia among elderly patients in Hamilton, Ontario, Canada. Similarly, Ostro et al. found in 2008 that components of $\text{PM}_{2.5}$ were associated with several childhood respiratory diseases including pneumonia, bronchitis, and asthma among children in six California counties. Much work on the association of $\text{PM}_{2.5}$ with health outcomes focuses on birth outcomes or respiratory issues; we expand this exploration to all classifications of preventable hospitalization.
+A 2006 study by Dominici, Peng, and Bell showed that short-term exposure to $\text{PM}_{2.5}$ increases the risk for hospital admission for cardiovascular and respiratory diseases. Specifically, there was a short-term increase in hospital admission rates associated with $\text{PM}_{2.5}$ for heart disease, heart rhythm, heart failure, COPD, and respiratory infection; the largest association was for heart failure. In a 2009 paper, Neupane et al. found that long-term exposure to higher levels of nitrogen dioxide and $\text{PM}_{2.5}$ is significantly associated with hospitalization for community-aquired pneumonia among elderly patients in Hamilton, Ontario, Canada. Similarly, Ostro et al. found in 2008 that components of $\text{PM}_{2.5}$ were associated with several childhood respiratory diseases including pneumonia, bronchitis, and asthma among children in six California counties. Much work on the association of $\text{PM}_{2.5}$ with health outcomes focuses on birth outcomes or respiratory issues; we expand this exploration to all classifications of preventable hospitalization.
 
 Bell et al. examine how air pollution control could not only prevent adverse health outcomes but also make a monumental economic impact. Air pollution control policy could help prevent over 156,000 deaths, 4 million asthma attacks, 300,000 children's medical visits, and almost 48,000 cases of chronic bronchitis over a twenty-year period in Santiago, Sao Paulo, and Mexico City; the economic value of these avoided health outcomes is about 21-165 billion USD. Fisk and Chan found in 2016 that using portable air cleaners led to economic benefits exceeding or far exceeding intervention costs. Thus, understanding how $\text{PM}_{2.5}$ is related to preventable hospitalizations can help California counties plan for intervention or even prevention efforts as well as budget for the impact of adverse health outcomes from wildfires.
 
 ## Initial Questions
 
+Our primary research question is what, if any, is the effect of $\text{PM}_{2.5}$ on hospitalization rates in California? We further want to investigate how this effect differs by medical condition. Additional questions relevant to the analysis are (1) to what extent is hospitalization rate spatially or temporally correlated, and (2) to what extent is the predictor $\text{PM}_{2.5}$ spatially or temporally correlated?
+
 ## Data
 
+We obtained our health-related data from the [California Health and Human Services Open Data Portal](https://data.chhs.ca.gov/dataset/rates-of-preventable-hospitalizations-for-selected-medical-conditions-by-county). The data contain annual hospitalization rates by county for a selection of preventable medical conditions. The rates are calculated using ICD-9 and ICD-10 codes and then standardized to the number of hospitalizations per 100,000 individuals. We obtained our air quality-related data from the [California Air Resources Board](https://www.arb.ca.gov/adam/index.html). The data include $\text{PM}_{2.5}$ levels by county. To match the granularity of our health data, we chose to use the annual days above the national 24-hour standard as our air quality metric. We also obtained county-level demographic data to control for any potential effect of demographic features on hospitalization rates; these data were obtained from the [US Census Bureau](https://factfinder.census.gov/faces/nav/jsf/pages/searchresults.xhtml?refresh=t&keepList=f).
 
-```{r (Xinye) packages that I will be using, message=FALSE,warning=FALSE}
+We merged the above datasets by county and year. The air quality data were only from the years 2010-2017, so we excluded any additional years from the other two datasets. Next, we checked each variable for unreasonable values. There were some values in the demographic data variables that were unreasonable (e.g. percentiles above 100\% describing a county's estimated percent of black residents); we excluded these rows.
+
+The data were originally in long format; each row represented a county, year, and medical condition combination. We spread the data to wide format so that each medical condition had its own column containing its associated annual hospitalization rates. The new dataframe had a row for each county and year combination. This dataframe was used for all subsequent analyses. 
+
+```{r (Xinye) packages that I will be using, message = FALSE, warning = FALSE}
 library("SpatioTemporal"); library("sp"); library("mgcv") #we need "gam" function
 library("ggplot2"); library("knitr"); library("dplyr"); library("ape") #moran's I
 library("spdep"); library("CARBayesST")
 ```
 
-
 ```{r (Xinye) data for EDA and GAM, message = FALSE, warning=FALSE}
-# prepare data
+# Prepare data
 
-#1. latitude and longitude
+# 1. latitude and longitude
 loc = cali@data[,c(5,6,ncol(cali@data)-1,ncol(cali@data))]
 loc$NAME = as.character(loc$NAME)
 names(loc)[1] = "county"
 loc$NAMELSAD = as.character(loc$NAMELSAD)
 
-#2. xy coordinates using WGS84, just in case
+# 2. xy coordinates using WGS84, just in case
 # source: https://rpubs.com/dasaptaerwin/19879
 xy <- as.data.frame(loc[,c(3,4)])
 xy <- as.data.frame(apply(xy,2,function(x){as.numeric(as.character(x))}))
@@ -72,7 +80,7 @@ datnew <- left_join(dat,loc.all,by = "county") %>%
 ## Exploratory Data Analysis
 
 #### 1. Spatial and temporal pattern for PM2.5
-PM2.5 levels vary across different regions with higher variability in the Farm region and relatively similar amount across counties in other regions. The temporal patterns for PM2.5 are also heterogeneous across regions and counties.
+$\text{PM}_{2.5}$ levels vary across different regions with high variability in the farm region and lower variability across counties in other regions. The temporal patterns for $\text{PM}_{2.5}$ are also heterogeneous across regions and counties.
 
 ```{r (Xinye) EDA, warning = FALSE, message = FALSE}
 
@@ -88,10 +96,9 @@ plot_pm25_time <- datnew %>% group_by(year, county) %>% filter(!is.na(pm25)) %>%
 plot_pm25_time
 ```
 
-
 #### Spatial autocorrelation 
 
-Our data is correlated in nature because of the intrinsic geographical clustering. We start with a Generalized Linear Model (GLM) which assumes independence of data, and we test the existence of spatial autocorrelations among residuals via Moran's I Index. 9 out of 17 causes of the preventable hospitalization rate are spatially autocorrelated. Causes that we fail to detect for spatial autocorrelation after accounting for the effect from PM2.5 and other covariates include Angina, Dehydration, Diabetes Short-term Complications, Hypertension, Lower-Extremity Amputation, Perforated Appendix, Uncontrolled Diabetes, and Prevention Quality Diabetes Composite.
+Our data are correlated because of their intrinsic geographical clustering. We start with a Generalized Linear Model (GLM) which assumes independence of data and we test the existence of spatial autocorrelations among residuals via Moran's I Index. 9 out of 17 causes of the preventable hospitalization rate are spatially autocorrelated. Hospitalization causes for which we fail to detect spatial autocorrelation after accounting $\text{PM}_{2.5}$ and other covariates include angina, dehydration, diabetes short-term complications, hypertension, lower-extremity amputation, perforated appendix, uncontrolled diabetes, and prevention quality diabetes composite.
 
 ```{r (Xinye) Morans I-testing spatial autocorrelation, message = FALSE, warning = FALSE}
 ca.dists <- as.matrix(dist(cbind(datnew$long, datnew$lat)))
@@ -133,12 +140,9 @@ for (i in 1:17){
 
 ```
 
-
-
-
 #### Linearity of spatial and temporal patterns 
 
-We used the Generalized Additive Model (GAM) with splines in both geographical locations and years to test the linearity of spatial and temporal trends for PM2.5. Both the spatial and the temporal pattern of PM2.5 are non-linear.
+We used the Generalized Additive Model (GAM) with splines in both geographical locations and years to test the linearity of spatial and temporal trends for $\text{PM}_{2.5}$. Both the spatial and the temporal pattern of $\text{PM}_{2.5}$ are non-linear.
 
 ```{r (Xinye) gam-testing linearity of spatial and temporal trend for pm2.5, message = FALSE,warning = FALSE}
 
@@ -157,7 +161,6 @@ kb_gam_pm25_st <- kable(tb_gam_pm25_st, caption = "linearity of spatial and temp
 
 kb_gam_pm25_st
 ```
-
 
 We also examine whether the spatiotemporal trend for each outcome is linear by applying the same method. It turns out that the spatial patterns are nonlinear for all outcomes whereas the temporal patterns are likely to be linear for all.
 
@@ -191,7 +194,9 @@ kable(tb_outcome_st, caption = "Spatio-temporal trends for all outcomes")
 ```
 
 
+
 ## Data Analysis
+
 
 
 #### CAR Model (Xinye): explain what it is and why
@@ -199,6 +204,8 @@ kable(tb_outcome_st, caption = "Spatio-temporal trends for all outcomes")
 
 
 ## Results and Summary
+
+
 
 #### CAR Model results (this should go last): need caption maybe?
 
