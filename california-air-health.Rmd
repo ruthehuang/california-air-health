@@ -211,7 +211,7 @@ The Bayes CAR model estimates the aggregated effect of PM2.5 on preventable hosp
 
 
 
-#### CAR Model results (this should go last): need caption maybe?
+#### CAR Model results (this should go last)
 
 ```{r (Xinye) CAR model, message = FALSE, warning = FALSE}
 #1. prepare data for CAR model: need to delete counties with NAs in pm25
@@ -267,7 +267,7 @@ car.model <- function(y,data = dat_car){
     var_name <- c("pm25","Age>60 (%)", "Black (%)", ">Bachelor (%)")
     model_summary <- cbind(var_name, point_estimate, CI)
     colnames(model_summary) <- c("","Estimate","95% Credible Interval")
-    tb <- kable(model_summary, caption = paste("Bayes CAR results for",y))
+    tb <- kable(model_summary, caption = noquote(paste("Bayes CAR results for",y)))
     return(tb)
   }
 }
