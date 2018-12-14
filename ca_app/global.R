@@ -6,9 +6,14 @@ cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
 ######## Ruthe's functions #########
 
 # outcome plotting function
-caplot <- function(yr, var, cutoffs = NULL) #year: numeric input, var: character input
+caplot <- function(yr, var, cutoffs = NULL, double = F) #year: numeric input, var: character input
 {
-  par(oma = c(4, 0, 0, 0), mar = c(2.5, 0.5, 1.5, 0.5))
+  if (!double)
+  {
+    par(oma = c(4, 0, 0, 0), mar = c(2.5, 0.5, 1.5, 0.5))
+  } else {
+    par(oma = c(4, 0, 0, 0), mar = c(3.5, 0.5, 1.5, 0.5))
+  }
   df <- dat %>% filter(year == yr) %>% dplyr::select_("county", var)
   map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
   if (length(cutoffs) == 0)
@@ -23,7 +28,12 @@ caplot <- function(yr, var, cutoffs = NULL) #year: numeric input, var: character
   
   plot(map, col = "grey77", border = NA, main = yr, cex.main = 1.5)
   plot(map, col = cols, add = T, border = NA)
-  legend("bottom", legend = levels(cut(unlist(df[ , var]), breaks = brks, include.lowest = T)), title = "Rate (per 100,000 people at risk)", fill = mycols, horiz = TRUE, bty = "n", cex = 1, xpd = T, inset = c(0, -0.1))
+  if (!double)
+  {
+    legend("bottom", legend = levels(cut(unlist(df[ , var]), breaks = brks, include.lowest = T)), title = "Rate (per 100,000 people at risk)", fill = mycols, horiz = TRUE, bty = "n", cex = 1, xpd = T, inset = c(0, -0.1))
+  } else {
+    legend("bottom", legend = levels(cut(unlist(df[ , var]), breaks = brks, include.lowest = T)), title = "Rate (per 100,000 people at risk)", fill = mycols, ncol = 3, bty = "n", cex = 1, xpd = T, inset = c(0, -0.2))
+  }
 }
 
 # PM 2.5 plotting function

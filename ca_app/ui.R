@@ -7,11 +7,11 @@ shinyUI(
               tags$style(".main-header .logo {height: 46px;}"),
               tags$style(".sidebar-toggle {height: 40px; padding-top: 3px !important;}"),
               tags$style(".navbar {min-height:40px !important}")),
-      title = "What do California's wildfires mean for residents' health?",
-      titleWidth = 2000
+      title = HTML("<p style = 'font-size: 20pt'>What do California's wildfires mean for residents' health?</p>"),
+      titleWidth = 800
       ),
     dashboardSidebar(
-      tags$style(".left-side, .main-sidebar {padding-top: 40px}
+      tags$style(".left-side, .main-sidebar {padding-top: 32px}
                
                  .tab { margin-left: 15px; margin-right: 15px}"
       ),
@@ -19,8 +19,8 @@ shinyUI(
       radioButtons("year", label = h4(HTML("<p style = 'color:white; font-size: 20pt; font-family: Abril Fatface'>Select a year to visualize:</p>")), choices = list("2010" = 2010, "2011" = 2011, "2012" = 2012, "2013" = 2013, "2014" = 2014, "2015" = 2015, "2016" = 2016, "2017" = 2017), selected = 2010),
       checkboxInput("quintile", label = "Color maps by quintiles", value = F),
       sidebarMenu(
-        menuItem(HTML("<p style = 'font-family: Cabin; color:white;'>By Year</p>"), tabName = "single"),
-        menuItem(HTML("<p style = 'font-family: Cabin; color:white;'>Over All Years</p>"), tabName = "continuous"),
+        menuItem(HTML("<p style = 'font-family: Cabin; color:white;'>Main Analysis</p>"), tabName = "single"),
+        menuItem(HTML("<p style = 'font-family: Cabin; color:white;'>Visualization Over Time</p>"), tabName = "continuous"),
         menuItem(HTML("<p style = 'font-family: Cabin; color:white;'>About this Project</p>"), tabName = "about")
       )
     ),
@@ -80,10 +80,10 @@ shinyUI(
                 ),
         tabItem(tabName = "continuous",
                 fluidRow(
-                  column(width = 4,
-                         box(title = h4("Health Outcomes by County", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, imageOutput("omap_cont"))),
-                  column(width = 8,
-                         box(title = h4("PM 2.5 Levels", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, plotOutput("pmmap_big")))
+                  column(width = 5,
+                         box(title = h4("Health Outcomes by County", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 550, imageOutput("omap_cont"))),
+                  column(width = 7,
+                         box(title = h4("PM 2.5 Levels", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 550, plotOutput("pmmap_big")))
                 )
         ),
         tabItem(tabName = "about",
@@ -92,7 +92,7 @@ shinyUI(
                          uiOutput("video"))
                 ),
                 fluidRow(
-                  column(width = 8,
+                  column(width = 11,
                          box(title = h4("Why did we make this app?", style = 'color:white; font-size: 20pt; font-family: Abril Fatface'), width = "100%", status = "primary", solidHeader = T, align = "center", height = 650, p("Nearly 90 million Americans are breathing air that doesn't meet the World Health Oranizations safe PM2.5 limit. The UK Department for Environment, Food & Rural Affairs states that long-term PM2.5 exposure poses a variety of health risks; most commonly, health consequences due to long-term PM2.5 exposure take the form of cardiovascular or respiratory diseases. This poses a serious public health problem because such diseases reduce both quality and length of life.", style = 'color: white; font-size: 10pt; font-family: Cabin', class = 'tab'),
                              p("There are many sources of PM2.5, including vehicular emissions and ash. California's large traffic volume and increasingly frequent wildfires both contribute to the state's PM2.5 levels. While wildfires are natural, climate change is making them more common and more severe. According to the Environmental Protection Agency, the state of California is becoming warmer as a whole and southern California, in particular, is becoming drier. These unnaturally warm and dry conditions promote frequent and devastating wildfires.)", style = 'color: white; font-size: 10pt; font-family: Cabin', class = 'tab'),
                              p("We are interested in investigating California county-level hospitalization rates as a function of the annual number of days each county had PM2.5 levels over the national standard. Our full report can be found at the following Github repo:", style = 'color: white; font-size: 10pt; font-family: Cabin', class = 'tab'),
