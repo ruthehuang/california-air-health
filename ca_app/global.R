@@ -1,7 +1,16 @@
 library(shiny); library(shinydashboard); library(dplyr); library(rgdal); library(animation); library(rlist); library(memisc); library("splines"); library("lme4"); library("SpatioTemporal"); library("sp"); library("mgcv"); library("knitr"); library("ape"); library("spdep"); library("CARBayesST"); library(ggplot2)
 
 load("data/dat.R")
+# load("data/dat_car.RData")
+# load("data/W.R")
+load("data/car_pneumonia.R")
+load("data/car_asthma_older.R")
+load("data/car_asthma_young.R")
+load("data/car_heart_fail.R")
+load("data/car_diabetes_st.R")
 cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
+
+
 
 ######## Ruthe's functions #########
 
@@ -57,40 +66,20 @@ cutoffs <- list(angina = c(0, 10, 20, 30, 45, 65), asthma_young = c(0, 10, 20, 3
 
 ####### Xinye's functions ############
 
-# car.model - return car results in kable format
-# default data: dat_car
-car.model <- function(y,data = dat_car){ #y: outcome name, character
-  require("knitr");require("CARBayes");require("dplyr")
-  if (! y %in% names(dat_car)[8:24]) 
-  {print("Outcome does not exist")}
-  else{
-    y2 = pull(dat_car[,y])
-    
-    dat_car_copy <- data.frame(dat_car) %>% 
-      mutate(outcome_interest = y2) %>%
-      dplyr::select(outcome_interest,year,age60_perc,est.black.percent,
-                    bachelor_perc,pm25)
-    
-    set.seed(1214)
-    fitst_adapt <- ST.CARadaptive(outcome_interest~pm25 + age60_perc + 
-                                    est.black.percent +
-                                    bachelor_perc + year, 
-                                  family = "gaussian",
-                                  data = dat_car_copy, W = W, burnin = 500, 
-                                  n.sample = 50500,
-                                  thin = 10)
-    #fitst_adapt$summary.results[c(2:5),c(1,2,3)]
-    
-    point_estimate <- unname(round(fitst_adapt$summary.results[c(2:5),1],2))
-    lb <- round(fitst_adapt$summary.results[c(2:5),2],2)
-    ub <- round(fitst_adapt$summary.results[c(2:5),3],2)
-    CI <- noquote(paste("(",lb,",",ub,")",sep = ""))
-    var_name <- c("pm25","Age>60 (%)", "Black (%)", ">Bachelor (%)")
-    model_summary <- cbind(var_name, point_estimate, CI)
-    colnames(model_summary) <- c("","Estimate","95% Credible Interval")
-    tb <- kable(model_summary, caption = noquote(paste("Bayes CAR results for",y)))
-    return(tb)
-  }
+car.model <- function(y){
+  obj <- ifelse(y == "asthma_young", car_asthma_young,
+                ifelse(y == "asthma_older", car_asthma_older,
+                       ifelse(y == "diabetes_st", car_diabetes_st,
+                              ifelse(y == "heart_fail", car_heart_fail, car_pneumonia))))
+  point_estimate <- unname(round(obj[[1]][c(2:5),1],2))
+  lb <- round(obj[[1]][c(2:5),2],2)
+  ub <- round(obj[[1]][c(2:5),3],2)
+  CI <- noquote(paste("(",lb,",",ub,")",sep = ""))
+  var_name <- c("pm25","Age>60 (%)", "Black (%)", ">Bachelor (%)")
+  model_summary <- cbind(var_name, point_estimate, CI)
+  colnames(model_summary) <- c("","Estimate","95% Credible Interval")
+  tb <- kable(model_summary)
+  return(tb)
 }
 
 ##### Emily's functions #######

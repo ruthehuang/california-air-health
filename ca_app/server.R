@@ -68,6 +68,11 @@ shinyServer(
       plot_fx(input$outcome, "pm25")
     }, height = 500)
     
+    output$outtable <- function () {
+      req(input$outcome)
+      car.model(y = input$outcome)
+    }
+    
     output$video <- renderUI({
         HTML('<iframe width="853.33" height="480" src="https://www.youtube.com/embed/EF-9I38ud4s" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')
     })
