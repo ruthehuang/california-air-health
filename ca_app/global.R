@@ -3,11 +3,11 @@ library(shiny); library(shinydashboard); library(dplyr); library(rgdal); library
 load("data/dat.R")
 # load("data/dat_car.RData")
 # load("data/W.R")
-load("data/car_data/car_pneumonia.R")
-load("data/car_data/car_asthma_older.R")
-load("data/car_data/car_asthma_young.R")
-load("data/car_data/car_heart_fail.R")
-load("data/car_data/car_diabetes_st.R")
+load("data/car_pneumonia.R")
+load("data/car_asthma_older.R")
+load("data/car_asthma_young.R")
+load("data/car_heart_fail.R")
+load("data/car_diabetes_st.R")
 cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
 
 
