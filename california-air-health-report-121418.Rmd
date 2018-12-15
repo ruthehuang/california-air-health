@@ -1,0 +1,690 @@
+---
+title: "California's PM2.5 levels and health outcomes"
+author: "Ruthe Huang, Xinye Li, Emily Scott"
+date: "December 19, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.align = "center")
+```
+
+## Motivation and Overview
+
+Nearly [90 million Americans](https://i.redd.it/bbnxf9b8rm321.jpg) are breathing air that doesn't meet the World Health Oranizations safe PM2.5 limit. The [UK Department for Environment, Food & Rural Affairs](https://laqm.defra.gov.uk/public-health/pm25.html) states that long-term PM2.5 exposure poses a variety of health risks; most commonly, health consequences due to long-term PM2.5 exposure take the form of cardiovascular or respiratory diseases. This poses a serious public health problem because such diseases reduce both quality and length of life. 
+
+There are many sources of PM2.5, including vehicular emissions and ash. California's large traffic volume and increasingly frequent wildfires both contribute to the state's PM2.5 levels. While wildfires are natural, climate change is making them more common and more severe. According to the [Environmental Protection Agency](https://www.epa.gov/sites/production/files/2016-09/documents/climate-change-ca.pdf), the state of California is becoming warmer as a whole and southern California, in particular, is becoming drier. California's average annual precipitation and temperature from 1895-2017 are shown below. These unnaturally warm and dry conditions promote frequent and devastating wildfires. 
+
+![](https://fivethirtyeight.com/wp-content/uploads/2018/11/science-fires-2.png?w=1150)
+
+California's burgeoning population has expanded into many high-risk fire zones. [TIME](http://time.com/4985252/california-wildfires-fires-climate-change/) reports on a 2017 Verisk risk analysis which found that "15% -- or over 2 million -- of California's homes [are] in high or extremely high wildfire risk zones and another 12% in moderate risk areas." Concurrently, large fires have become more common in California, as seen in the chart below. Each bar represents a single fire, and the bar height represents the size of areas burned in acres. The proximity of these populations to PM2.5 sources such as wildfires puts them at increased risk of unhealthy exposure levels (not to mention the risks of the wildfire itself). 
+
+![](https://www.gannett-cdn.com/experiments/usatoday/responsive/2018/ca-wildfires/img/cal-fires-1970-2017.svg)
+
+We are interested in investigating California county-level hospitalization rates as a function of the annual number of days each county had PM2.5 levels over the national standard.
+
+## Related Work
+
+A 2006 study by Dominici, Peng, and Bell showed that short-term exposure to PM2.5 increases the risk for hospital admission for cardiovascular and respiratory diseases. Specifically, there was a short-term increase in hospital admission rates associated with PM2.5 for heart disease, heart rhythm, heart failure, COPD, and respiratory infection; the largest association was for heart failure. In a 2009 paper, Neupane et al. found that long-term exposure to higher levels of nitrogen dioxide and PM2.5 is significantly associated with hospitalization for community-aquired pneumonia among elderly patients in Hamilton, Ontario, Canada. Similarly, Ostro et al. found in 2008 that components of PM2.5 were associated with several childhood respiratory diseases including pneumonia, bronchitis, and asthma among children in six California counties. Much work on the association of PM2.5 with health outcomes focuses on birth outcomes or respiratory issues; we expand this exploration to additional classifications of preventable hospitalization.
+
+Bell et al. examine how air pollution control could not only prevent adverse health outcomes but also make a monumental economic impact. Air pollution control policy could help prevent over 156,000 deaths, 4 million asthma attacks, 300,000 children's medical visits, and almost 48,000 cases of chronic bronchitis over a twenty-year period in Santiago, Sao Paulo, and Mexico City; the economic value of these avoided health outcomes is about 21-165 billion USD. Fisk and Chan found in 2016 that using portable air cleaners led to economic benefits exceeding or far exceeding intervention costs. Thus, understanding how PM2.5 is related to preventable hospitalizations can help California counties plan for intervention or even prevention efforts as well as budget for the impact of adverse health outcomes from wildfires.
+
+## Initial Questions
+
+Our primary research question is what, if any, is the effect of PM2.5 on hospitalization rates in California? We further want to investigate how this effect differs by medical condition. Additional questions relevant to the analysis are (1) to what extent is hospitalization rate spatially or temporally correlated, and (2) to what extent is the predictor PM2.5 spatially or temporally correlated?
+
+## Data
+
+We obtained our health-related data from the [California Health and Human Services Open Data Portal](https://data.chhs.ca.gov/dataset/rates-of-preventable-hospitalizations-for-selected-medical-conditions-by-county). The data contain annual hospitalization rates by county for a selection of preventable medical conditions. The rates are calculated using ICD-9 and ICD-10 codes and then standardized to the number of hospitalizations per 100,000 individuals.
+
+```{r Read in data 1 (Ruthe)}
+rm(list = ls())
+library("splines"); library("lme4"); library("knitr")
+library(tidyverse); library(lubridate); library(stringr); library(stringr); library(rgdal); library("SpatioTemporal"); library("sp"); library("mgcv"); library("spdep"); library("CARBayesST"); library("ape"); library(kableExtra)
+
+phosp <- read_csv("data/ca-oshpd-preventablehospitalizations-county-2005-2017.csv")
+ph_early <- phosp %>% filter(Year < 2016) %>% group_by(County, Year) %>% dplyr::select(Year, County, PQIDescription, ObsRate_ICD9) %>% spread(PQIDescription, value = ObsRate_ICD9) %>% rename(diabetes_st = "Diabetes Short-term Complications", perf_appendix = "Perforated Appendix", diabetes_lt = "Diabetes Long-term Complications", asthma_older = "COPD or Asthma in Older Adults (Age 40+)", hypertension = "Hypertension", heart_fail = "Heart Failure", dehydration = "Dehydration", pneumonia = "Community-Acquired Pneumonia", uti = "Urinary Tract Infection", angina = "Angina without Procedure", diabetes_uc = "Uncontrolled Diabetes", asthma_young = "Asthma in Younger Adults (Age 18-39)", amputation_diab = "Lower-Extremity Amputation (Diabetes)", pq_overall = "Prevention Quality Overall Composite", pq_acute = "Prevention Quality Acute Composite", pq_chronic = "Prevention Quality Chronic Composite") %>% mutate(pq_diabetes = NA)
+
+ph_late <- phosp %>% filter(Year >= 2016) %>% group_by(County, Year) %>% dplyr::select(Year, County, PQIDescription, ObsRate_ICD10) %>% spread(PQIDescription, value = ObsRate_ICD10) %>% rename(asthma_older = "COPD or Asthma in Older Adults (Age 40+)", diabetes_st = "Diabetes Short-term Complications", perf_appendix = "Perforated Appendix", diabetes_lt = "Diabetes Long-term Complications", hypertension = "Hypertension", heart_fail = "Heart Failure", dehydration = "Dehydration", pneumonia = "Community-Acquired Pneumonia", uti = "Urinary Tract Infection", diabetes_uc = "Uncontrolled Diabetes", asthma_young = "Asthma in Younger Adults (Age 18-39)", amputation_diab = "Lower-Extremity Amputation (Diabetes)", pq_overall = "Prevention Quality Overall Composite", pq_acute = "Prevention Quality Acute Composite", pq_chronic = "Prevention Quality Chronic Composite", pq_diabetes = "Prevention Quality Diabetes Composite") %>% mutate(angina = NA)
+
+phosp <- rbind(ph_early, ph_late) %>% arrange(County) %>% rename(county = County, year = Year)
+head(phosp)
+```
+
+We obtained our air quality-related data from the [California Air Resources Board](https://www.arb.ca.gov/adam/index.html). The data include PM2.5 levels by county. To match the granularity of our health data, we chose to use the annual days above the national 24-hour standard as our air quality metric.
+
+```{r Read in data 2 (Ruthe)}
+pm25 <- read_csv("data/pm25_annual-days-above-nat-24-hr-stnd.csv", na = "*") %>% group_by(county) %>% summarize(pm2010 = mean(pm2010, na.rm = T), pm2011 = mean(pm2011, na.rm = T), pm2012 = mean(pm2012, na.rm = T), pm2013 = mean(pm2013, na.rm = T), pm2014 = mean(pm2014, na.rm = T), pm2015 = mean(pm2015, na.rm = T), pm2016 = mean(pm2016, na.rm = T), pm2017 = mean(pm2017, na.rm = T)) %>% gather(year, pm25, pm2010:pm2017) %>% mutate(year = as.numeric(str_sub(year, 3, 6))) %>% arrange(county)
+head(pm25)
+```
+
+We also obtained county-level demographic data to control for any potential effect of demographic features on hospitalization rates; these data were obtained from the [US Census Bureau](https://factfinder.census.gov/faces/nav/jsf/pages/searchresults.xhtml?refresh=t&keepList=f).
+
+```{r Read in data 3 (Ruthe)}
+demo <- read_csv("data/age_edu_race.csv")[ , -1] %>% group_by(Geography, Year) %>% filter(bachelor_perc <= 100) %>% summarize(age60_perc = mean(age60_perc, na.rm = T), bachelor_perc = mean(bachelor_perc, na.rm = T), est.white.percent = mean(est.white.percent, na.rm = T), est.black.percent = mean(est.black.percent, na.rm = T)) %>% ungroup() %>% mutate(Geography = str_sub(Geography, 1, -20)) %>% rename(county = Geography, year = Year)
+head(demo)
+```
+
+We merged the above datasets by county and year. The air quality data were only from the years 2010-2017, so we excluded any additional years from the other two datasets. Next, we checked each variable for unreasonable values. There were some values in the demographic data variables that were unreasonable (e.g. percentiles above 100\% describing a county's estimated percent of black residents); we excluded these rows.
+
+```{r Read in data 4 (Ruthe)}
+dat <- demo %>% left_join(pm25, by = c("county", "year")) %>% left_join(phosp, by = c("county", "year")) %>% mutate(region = NA, region = replace(region, county %in% c("Del Norte", "Humboldt", "Mendocino", "Lake", "Siskiyou", "Trinity", "Shasta", "Tehema", "Butte", "Yuba",
+"Sacramento", "Modoc", "Lassen"), "northern"), region = replace(region, county %in% c("Sonoma", "Marin", "Solano", "Napa", "Yolo", "Contra Costa", "Alameda", "San Mateo", "Santa Clara", "Santa Cruz", "San Benito", "Monterey", "San Luis Obispo", "Santa Barbara", "Ventura", "Orange", "San Diego", "Riverside", "Sierra", "Nevada", "Placer", "El Dorado", "Amador", "Mono"), "coastal"), region = replace(region, county %in% c("Alpine", "Calaveras", "Tuolumne", "Mariposa", "Inyo"), "motherlode"), region = replace(region, county %in% c("Glenn", "Colusa", "Sutter", "San Joaquin", "Stanislaus", "Merced", "Madera", "Fresno", "Kings", "Tulare", "Kern", "Los Angeles", "San Bernardino"), "farm"), region = replace(region, county == "San Francisco", "sanfrancisco"), region = replace(region, county == "Imperial", "imperial"))
+
+# save(dat, file = "data/dat.R")
+rm(list = setdiff(ls(), "dat"))
+head(dat)
+```
+
+The data were originally in long format; each row represented a county, year, and medical condition combination. We spread the data to wide format so that each medical condition had its own column containing its associated annual hospitalization rates. The new dataframe had a row for each county and year combination. This dataframe was used for all subsequent analyses. 
+
+We also use a California counties shapefile in order to visualize geographical trends.
+
+```{r maps (Ruthe)}
+cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
+cali$NAME <- as.character(cali$NAME)
+```
+
+```{r (Xinye) data for EDA and GAM, message = FALSE, warning=FALSE}
+# Prepare data
+
+# 1. latitude and longitude
+loc = cali@data[,c(5,6,ncol(cali@data)-1,ncol(cali@data))]
+loc$NAME = as.character(loc$NAME)
+names(loc)[1] = "county"
+loc$NAMELSAD = as.character(loc$NAMELSAD)
+
+# 2. xy coordinates using WGS84, just in case
+# source: https://rpubs.com/dasaptaerwin/19879
+xy <- as.data.frame(loc[,c(3,4)])
+xy <- as.data.frame(apply(xy,2,function(x){as.numeric(as.character(x))}))
+cord.dec = SpatialPoints(cbind(xy$INTPTLON,-xy$INTPTLAT), 
+                         proj4string=CRS("+proj=longlat"))
+coord <- as.data.frame(spTransform(cord.dec, CRS("+init=epsg:32748")))
+
+#3. combine latlong and coordinates
+loc.all <- data.frame(loc,x = coord$coords.x1, y = coord$coords.x2)
+
+
+#4. merge; convert lat and long to numeric 
+# this is the data used for GAM, but not for CAR model
+
+datnew <- left_join(dat,loc.all,by = "county") %>% 
+  mutate(lat = as.numeric(as.character(INTPTLAT)),
+         long = as.numeric(as.character(INTPTLON))) 
+
+```
+
+## Exploratory Data Analysis
+
+We first explore general trends across all California counties for PM2.5 and our outcomes of interest -- specifically, asthma in younger adults (18-39 years of age), asthma/COPD in older adults (40+ years of age), short-term diabetes complications, heart failure, and pneumonia. We create functions for creating choropleth maps:
+
+```{r CA visualizations (Ruthe)}
+caplot <- function(yr, var, cutoffs = NULL) #year: numeric input, var: character input
+{
+  df <- dat %>% filter(year == yr) %>% dplyr::select(county, var)
+  map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
+  if (length(cutoffs) == 0)
+  {
+    brks <- quantile(map@data[ , var], seq(0, 1, by = 0.2), na.rm = T)
+    mycols <- c("rosybrown1", "palevioletred1", "deeppink1", "magenta3", "purple4")
+  } else {
+    brks <- cutoffs
+    mycols <- c("cornsilk1", "goldenrod1", "darkorange", "firebrick2", "darkred")
+  }
+  cols <- as.character(cut(map@data[ , var], breaks = brks, labels = mycols))
+  
+  plot(map, col = "grey77", border = NA, main = yr, cex.main = 2)
+  plot(map, col = cols, add = T, border = NA)
+}
+
+
+pmplot <- function(yr) # special function for PM 2.5 plots
+{
+  df <- dat %>% filter(year == yr) %>% dplyr::select(county, pm25)
+  map <- merge(cali, df, by.x = "NAME", by.y = "county", all.x = T)
+  cols <- as.character(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T, labels = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy")))
+  
+  plot(map, col = "grey77", border = NA, main = yr, cex.main = 2)
+  plot(map, col = cols, add = T, border = NA)
+  # legend(x = -12890659, y = 4927837, legend = levels(cut(map@data[ , "pm25"], breaks = c(0, 3, 6, 10, 20, 100), include.lowest = T)), fill = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy"), cex = 1)
+}
+
+bigplot <- function(var, cut = NULL, omit = F)
+{
+  if (length(cut) == 0)
+  {
+    par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
+    caplot(2010, var)
+    caplot(2011, var)
+    caplot(2012, var)
+    caplot(2013, var)
+    caplot(2014, var)
+    caplot(2015, var)
+    if (omit == F)
+    {
+      caplot(2016, var)
+      caplot(2017, var)
+    }
+    par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
+    plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
+    legend("bottom", legend = c("[0-20th percentile]", "(20-40th percentile]", "(40-60th percentile]", "(60-80th percentile]", "(80-100th percentile]"), fill = c("rosybrown1", "palevioletred1", "deeppink1", "magenta3", "purple4"), xpd = TRUE, horiz = TRUE, inset = c(0, 0), bty = "n", cex = 2)
+  } else {
+    par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
+    caplot(2010, var, cutoffs = cut)
+    caplot(2011, var, cutoffs = cut)
+    caplot(2012, var, cutoffs = cut)
+    caplot(2013, var, cutoffs = cut)
+    caplot(2014, var, cutoffs = cut)
+    caplot(2015, var, cutoffs = cut)
+    caplot(2016, var, cutoffs = cut)
+    caplot(2017, var, cutoffs = cut)
+    par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
+    plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
+    legend("bottom", legend = levels(cut(unlist(dat[ , var]), breaks = cut, include.lowest = T)), fill = c("cornsilk1", "goldenrod1", "darkorange", "firebrick2", "darkred"), xpd = TRUE, horiz = TRUE, inset = c(0, 0), bty = "n", cex = 2)
+  }
+}
+```
+
+### Days Over National PM2.5 Standard by County Over Time
+
+```{r, fig.height = 9, fig.width = 14}
+par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
+pmplot(2010)
+pmplot(2011)
+pmplot(2012)
+pmplot(2013)
+pmplot(2014)
+pmplot(2015)
+pmplot(2016)
+pmplot(2017)
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
+legend("bottom", legend = levels(cut(dat$pm25, breaks = c(0, 5, 10, 20, 30, 100), include.lowest = T)), fill = c("darkseagreen1", "mediumspringgreen", "darkturquoise", "dodgerblue2", "navy"), xpd = TRUE, horiz = TRUE, inset = c(0, 
+    0), bty = "n", cex = 2)
+```
+
+### Health Outcomes Over Time
+
+#### 1. Asthma (in Younger Adults)
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("asthma_young", cut = c(0, 10, 20, 30, 45, 125))
+bigplot("asthma_young")
+```
+
+#### 2. Asthma/COPD (in Older Adults)
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("asthma_older", cut = c(100, 250, 400, 600, 800, 1000))
+bigplot("asthma_older")
+```
+
+#### 3. Diabetes (Short-Term Complications)
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("diabetes_st", cut = c(15, 45, 75, 100, 120, 150))
+bigplot("diabetes_st")
+```
+
+#### 4. Heart Failure
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("heart_fail", cut = c(120, 200, 300, 400, 500, 600))
+bigplot("heart_fail")
+```
+
+#### 5. Pneumonia
+```{r, fig.height = 9, fig.width = 14, echo = F}
+bigplot("pneumonia", cut = c(50, 100, 200, 300, 400, 550))
+bigplot("pneumonia")
+```
+
+We also examine trends by regions. In 2002, the California Department of Social Services performed a cluster analysis of counties on six key characteristics: (1) welfare dependency rate, (2) annual unemployment rate, (3) percent of population in poverty, (4) percent of children reported to child welfare services, (5) percent of the population identified as Hispanic, and (6) percent of the population participating in an SSI/SSP program. All characteristics were taken from 2000 metrics. The regions are defined as follows:
+
+  - **Northern Region:** Del Norte, Humboldt, Mendocino, Lake, Siskiyou, Trinity, Shasta, Tehama, Butte, Yuba, Sacramento, Modoc, Lassen
+  - **Coastal Region plus Tahoe Area:** Sonoma, Marin, Solano, Napa, Yolo, Contra Costa, Alameda, San Mateo, Santa Clara, Santa Cruz, San Benito, Monterey, San Luis Obispo, Santa Barbara, Ventura, Orange, San Diego, Riverside, Sierra, Nevada, Placer, El Dorado, Amador, Mono
+  - **Mother Lode Mountain Region:** Alpine, Calaveras, Tuolumne, Mariposa, Inyo
+  - **Farm Region:** Glenn, Colusa, Sutter, San Joaquin, Stanislaus, Merced, Madera, Fresno, Kings, Tulare, Kern, Los Angeles, San Bernardino
+  - **San Francisco:** San Francisco
+  - **Imperial:** Imperial
+
+#### 1. Spatial and temporal pattern for PM2.5
+
+PM2.5 levels vary across different regions with high variability in the farm region and lower variability across counties in other regions. The temporal patterns for PM2.5 are also heterogeneous across regions and counties.
+
+```{r (Xinye) EDA, warning = FALSE, message = FALSE}
+# EDA: temporal trend in each region
+plot_pm25_time <- datnew %>% group_by(year, county) %>% filter(!is.na(pm25)) %>%
+  ggplot(aes(x = year, y = pm25,color = county)) +
+  geom_smooth(method = "gam",formula = y~s(x,k= 5),se = FALSE,size = .5) +
+  facet_wrap(.~region,ncol = 5) + 
+  labs(title = "Temporal trends of PM2.5 across regions") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5,size = 10),
+        legend.position = "bottom")
+
+plot_pm25_time
+```
+
+#### 2. Spatial autocorrelation 
+
+Our data are correlated because of their intrinsic geographical clustering. We start with a Generalized Linear Model (GLM) which assumes independence of data and we test the existence of spatial autocorrelations among residuals via Moran's I Index. 9 out of 17 causes of the preventable hospitalization rate are spatially autocorrelated. Hospitalization causes for which we fail to detect spatial autocorrelation after accounting PM2.5 and other covariates include angina, dehydration, diabetes short-term complications, hypertension, lower-extremity amputation, perforated appendix, uncontrolled diabetes, and prevention quality diabetes composite.
+
+```{r (Xinye) Morans I-testing spatial autocorrelation, message = FALSE, warning = FALSE}
+ca.dists <- as.matrix(dist(cbind(datnew$long, datnew$lat)))
+ca.dists.inv <- 1/ca.dists
+diag(ca.dists.inv) <- 0
+ca.dists.inv[is.infinite(ca.dists.inv)] <- 0
+
+# a function that returns pvalue from Moran's I index testing
+moransI.pval <- function(y){
+  res = rep(NA,320)
+  if (! y %in% names(datnew)[8:24]) 
+  {print("Outcome does not exist")}
+  
+  else{
+    y2 = as.vector(pull(datnew[,y]))
+    
+    datnew_copy <- data.frame(datnew) %>% 
+      dplyr::mutate(outcome_interest = y2) %>%
+      dplyr::select(outcome_interest,year,age60_perc,est.black.percent,
+                    bachelor_perc,pm25)
+    
+    fit_glm = glm(outcome_interest ~ pm25 + age60_perc + est.black.percent +
+                    bachelor_perc, data = datnew_copy)
+    res_glm = residuals.glm(fit_glm)
+    res[as.numeric(names(res_glm))] <- res_glm 
+    Moran.I(res,ca.dists.inv,na.rm = TRUE)$p.value
+    #return(res)
+  }
+}
+
+mI_pval <- c()
+
+for (i in 1:17){
+  mI_pval[i] <- moransI.pval(names(datnew)[7+i])
+}
+
+# these outcomes are not spatially autocorrelated
+# names(datnew[8:24])[which(mI_pval > 0.05)]
+
+```
+
+#### 3. Linearity of spatial and temporal patterns 
+
+We used the Generalized Additive Model (GAM) with splines in both geographical locations and years to test the linearity of spatial and temporal trends for PM2.5. Both the spatial and the temporal pattern of PM2.5 are non-linear.
+
+```{r (Xinye) gam-testing linearity of spatial and temporal trend for pm2.5, message = FALSE, warning = FALSE}
+
+# test the spatio-temporal trend of PM2.5
+gam_pm25_spacetime <- gam(pm25~s(lat,long) + s(year, k = 5),
+                          data = datnew,family = gaussian)
+
+# gam output
+tb_gam_pm25_st <- summary.gam(gam_pm25_spacetime)$s.table
+colnames(tb_gam_pm25_st) <- c("Estimated df", "Residual df",
+                              "F-statistic","p-value")
+tb_gam_pm25_st[1,4] <- "<2.2e-16"
+tb_gam_pm25_st[,1:3] <- round(as.numeric(tb_gam_pm25_st[,1:3]),2)
+tb_gam_pm25_st[2,4] <- 0.0012
+kb_gam_pm25_st <- kable(tb_gam_pm25_st, caption = "linearity of spatial and temporal trends for PM2.5")
+
+kb_gam_pm25_st
+```
+
+We also examine whether the spatiotemporal trend for each outcome is linear by applying the same method. It turns out that the spatial patterns are nonlinear for all outcomes whereas the temporal patterns are likely to be linear for all.
+
+```{r (Xinye) testing linearity of spatial and temporal trend for outcomes,message = FALSE, warning = FALSE}
+
+st.trend <- function(y,data = datnew) {
+  require("mgcv");require("dplyr")
+  # check whether input outcome exists
+  if (! y %in% names(datnew)[8:24]) 
+  {print("Outcome does not exist")}
+  
+  else{
+    y = datnew[,y]
+  #GAM
+  gam_outcome_spacetime <- gam(y~s(lat,long)+s(year, k = 5),
+                               data = datnew,family = gaussian)
+  test_linear_trend <- summary(gam_outcome_spacetime)$s.table
+  
+
+  #return smoothness results
+  return(test_linear_trend)}
+}
+
+
+tmp = apply(matrix(names(datnew)[8:24],ncol = 1),1, st.trend)
+
+tb_outcome_st <- matrix(c(mean(tmp[7,] < 0.05),mean(tmp[8,] < 0.05)),ncol = 2)
+colnames(tb_outcome_st) <- c("Spatial non-linearity (%)",
+                             "Temporal non-linearity (%)")
+kable(tb_outcome_st, caption = "Spatio-temporal trends for all outcomes")
+```
+
+## Data Analysis
+
+We used two approaches to measure the effect of pm2.5 on various hospitalization rates: (1) generalized linear mixed models and (2) Bayes conditional autoregression models. Recall from the data discussion above that we have 8 records for each county for each medical condition hospitalization rate (one record per year).
+
+#### 1. GLMM
+
+The generalized linear mixed model regressed hospitalization rates for each medical condition on four predictor variables: (1) annual number of days PM2.5 levels were over the national standard, (2) year, (3) the estimated percent of people in the county who are age 60 or older, and (4) the estimated percent of people in the county who are black. We assume that PM2.5 is a linear predictor of hospitalization rate. We think this assumption may be violated based on results from our GAM results; however, we were unable to fit a spline of PM2.5 due to convergence issues. We proceed with the linear fit, acknowledging the inherent limitations of this assumption. We used a spline of centered year with 3 knots based on GAM results that estimated the number of degrees of freedom for year to be 3.68. We included the variables describing the percent of people who are age 60 or older and the percent of people who are black as-is. We included random intercepts for county nested in region to control for spatial clustering. This is likely an oversimplification of the spatial correlation. We will discuss the specific results from the analysis of the following hospitalization rates: asthma in adults 18-39, COPD or asthma in adults 40+, short-term diabetes complications, heart failure, and pneumonia. Additional analyses can be explored using the associated Shiny app.
+
+#### 2. Bayes CAR Model
+
+To further study the overall effect of PM2.5 on preventable hospitalization, we use a Bayesian hierarchical model with random effects estimated from a Conditional Autoregressive (CAR) model. More specifically, we consider a CAR(1) model to represent the spatiotemporal random effects structure with hyperparameters from Uniform and Inverse Gamma distributions. 
+
+Markov Chain Monte Carlo (MCMC) simulation with 50500 samples is implemented to make the inference. To eliminate the instability and autocorrelations from the Markov Chain, the first 500 samples are discarded and the sequence is thinned by 10 with resulting 5000 post-burn-in and thinned samples. 
+
+The Bayes CAR model estimates the aggregated effect of PM2.5 on preventable hospitalization of different causes in California. The spatiotemporal correlation has been taken into account in estimation, and therefore, the results are more reasonable comparing to models without considerations of spatiotemporal effects.
+
+## Results and Summary
+
+#### GLMM results
+
+We estimate a positive relationship between PM2.5 levels and hospitalization rates due to asthma in younger adults (18-39), COPD or asthma in older adults (40+), diabetes short-term complications, and pneumonia. The only statistically significant result is that for diabetes short-term complications. This significant result should be taken with a grain of salt because we fit so many regression models to the dataset with different predictors that we could be measuring a significant effect by chance. The results are discussed in further detail below were obtained using the following functions.
+
+```{r Define glm function}
+# Gaussian distribution
+glm_fx <- function(health_outcome)
+{
+  i.col <- which(colnames(dat) == health_outcome)
+
+  dat$year_center <- scale(dat$year, scale = FALSE)
+  q.year <- quantile(dat$year_center, c(0.25, 0.50, 0.75))
+
+  fit <- lmer(unlist(dat[,i.col]) ~ pm25 + ns(year_center, knots = q.year) + age60_perc + est.black.percent + (1|region/county), 
+              data = dat)
+  
+  return(fit)
+}
+```
+
+```{r Define interpretation function}
+# Take as input the output of glm_fx
+interpret_fx <- function(fit)
+{
+  # Identify outcome variable from fit
+  health_outcome <- as.character(names(fit@frame$`unlist(dat[, i.col])`)[1])
+  health_outcome <- substr(health_outcome, 1, nchar(health_outcome)-1)
+
+  # Redefine health outcome
+  health_outcome <- ifelse(health_outcome == "amputation_diab", "amputation due to diabetes",
+                    ifelse(health_outcome == "angina", "angina",
+                    ifelse(health_outcome == "asthma_older", "COPD or asthma in older adults (age 40+)",
+                    ifelse(health_outcome == "asthma_young", "asthma in younger adults (age 18-39)",
+                    ifelse(health_outcome == "dehydration", "dehydration",
+                    ifelse(health_outcome == "diabetes_lt", "diabetes long-term complications",
+                    ifelse(health_outcome == "diabetes_st", "diabetes short-term complications",
+                    ifelse(health_outcome == "diabetes_uc", "uncontrolled diabetes complications",
+                    ifelse(health_outcome == "heart_fail", "heart failure", 
+                    ifelse(health_outcome == "hypertension", "hypertension",
+                    ifelse(health_outcome == "pneumonia", "pneumonia",
+                    ifelse(health_outcome == "uti", "UTI",
+                           health_outcome))))))))))))
+  
+  # Identify relevant coefficients
+  i.int <- which(rownames(summary(fit)$coefficients) == "(Intercept)")
+  i.pm25 <- which(rownames(summary(fit)$coefficients) == "pm25")
+  
+  # Save coefficient values
+  int <- round(summary(fit)$coefficients[i.int,1],2)
+  int.se <- round(summary(fit)$coefficients[i.int,2],2)
+  pm25 <- round(summary(fit)$coefficients[i.pm25,1],2)
+  pm25.se <- round(summary(fit)$coefficients[i.pm25,2],2)
+  
+  # Interpretation
+  interpretation <- paste("The expected hospitalization rate for ", health_outcome, " is ", int, " hospitalizations per 100,000 people at risk when there are zero days over the pm2.5 national standard (95% CI: (", round(int - 1.96*int.se, 2), ", ", round(int + 1.96*int.se,2), ")). For every additional day over the national pm2.5 standard, we expect a ", pm25, " change in this hospitalization rate (95% CI: (", round(pm25 - 1.96*pm25.se, 2), ", ", round(pm25 + 1.96*pm25.se, 2), ")).", sep = "")
+  
+  return(interpretation)
+}
+```
+
+```{r}
+plot_fx <- function(health_outcome, x_axis)
+{
+  # Create centered year variable; calculate quartiles; store unique values in vector
+  dat$year_center <- scale(dat$year, scale = FALSE)
+  q.year <- quantile(dat$year_center, c(0.25, 0.50, 0.75))
+  year_vector <- as.vector(unique(dat$year_center))
+  
+  # Calculate average value for percent black
+  dat <- group_by(dat, county) %>%
+    mutate(mean_black_percent = mean(est.black.percent))
+
+  # Calculate spline basis expansion
+  m <- model.matrix(~ns(year_vector, knots = q.year))
+  m <- as.data.frame(m)
+  m$year_center <- year_vector
+
+  # Create dataframe for plotting
+  plot_df <- expand.grid(year_center = unique(dat$year_center),
+                         pm25 = as.numeric(min(dat$pm25, na.rm = TRUE):max(dat$pm25, na.rm = TRUE)),
+                         vars = unique(paste(dat$county, dat$region, 
+                                             dat$age60_perc, dat$mean_black_percent, sep = "-"))) 
+  
+  plot_df <- separate(plot_df, vars, 
+                      into = c("county","region","age60_perc","est.black.percent"), 
+                      sep = "[-]")
+  
+  plot_df$age60_perc <- as.numeric(plot_df$age60_perc)
+  plot_df$est.black.percent <- as.numeric(plot_df$est.black.percent)
+
+  plot_df <- left_join(plot_df, m, by = "year_center") %>%
+    mutate(interaction = paste(county, ":", region, sep = "")) %>%
+    filter(interaction %in% rownames(head(ranef(glm_fx(health_outcome)))$`county:region`))
+  
+  plot_df$Estimate <- predict(glm_fx(health_outcome), plot_df)
+  plot_df$Estimate <- ifelse(plot_df$Estimate < 0, 0, plot_df$Estimate)
+  plot_df$year <- plot_df$year_center + mean(dat$year)
+
+  # Create labeller 
+  region_labels <- c("Coastal", "Farm", "Imperial",
+                     "Northern", "San Francisco")
+  names(region_labels) <- c("coastal", "farm", "imperial", 
+                            "northern", "sanfrancisco")
+  
+  # Redefine health outcome
+  health_outcome <- ifelse(health_outcome == "amputation_diab", "amputation due to diabetes",
+                    ifelse(health_outcome == "angina", "angina",
+                    ifelse(health_outcome == "asthma_older", "COPD or asthma in older adults (age 40+)",
+                    ifelse(health_outcome == "asthma_young", "asthma in younger adults (age 18-39)",
+                    ifelse(health_outcome == "dehydration", "dehydration",
+                    ifelse(health_outcome == "diabetes_lt", "diabetes long-term complications",
+                    ifelse(health_outcome == "diabetes_st", "diabetes short-term complications",
+                    ifelse(health_outcome == "diabetes_uc", "uncontrolled diabetes complications",
+                    ifelse(health_outcome == "heart_fail", "heart failure", 
+                    ifelse(health_outcome == "hypertension", "hypertension",
+                    ifelse(health_outcome == "pneumonia", "pneumonia",
+                    ifelse(health_outcome == "uti", "UTI",
+                           health_outcome))))))))))))
+
+  if (x_axis == "Year" | x_axis == "year")
+  {
+    plot <- filter(plot_df, pm25 == 0) %>%
+      ggplot(aes(x = year, y = Estimate)) +   
+      geom_line(aes(color = county)) + 
+      facet_grid(~ region, labeller = labeller(region = region_labels)) + 
+      ggtitle(paste("Estimated ", health_outcome, " hospitalization rate", sep = "")) +
+      xlab("\nYear") +
+      ylab("Hospitalizations per 100,000 at risk\n") +
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 90), 
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "bottom",
+            legend.title = element_blank())
+  }
+  
+  if (x_axis == "pm25")
+  {
+    plot <- filter(plot_df, year == 2012) %>%
+      ggplot(aes(x = pm25, y = Estimate)) +
+      geom_line(aes(color = county)) + 
+      facet_grid(~region, labeller = labeller(region = region_labels)) +
+      ggtitle(paste("Estimated ", health_outcome, " hospitalization rate", sep = "")) +
+      xlab("\nAnnual number of days over pm2.5 national standard") +
+      ylab("Hospitalizations per 100,000 at risk\n") +
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 90), 
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "bottom",
+            legend.title = element_blank())
+  }
+  return(plot)
+}
+```
+
+```{r, echo = FALSE}
+plot1a <- plot_fx("asthma_young", "year")    # Asthma in adults 18-39
+plot2a <- plot_fx("asthma_older", "year")    # COPD or asthma in adults 40+
+plot3a <- plot_fx("diabetes_st", "year")     # Short-term diabetes complications
+plot4a <- plot_fx("heart_fail", "year")      # Heart failure
+plot5a <- plot_fx("pneumonia", "year")       # Pneumonia
+
+plot1b <- plot_fx("asthma_young", "pm25")    # Asthma in adults 18-39
+plot2b <- plot_fx("asthma_older", "pm25")    # COPD or asthma in adults 40+
+plot3b <- plot_fx("diabetes_st", "pm25")     # Short-term diabetes complications
+plot4b <- plot_fx("heart_fail", "pm25")      # Heart failure
+plot5b <- plot_fx("pneumonia", "pm25")       # Pneumonia
+```
+
+```{r, echo = FALSE, fig.height = 6}
+plot1a
+plot1b
+```
+
+The estimated number of hospitalizations due to asthma in younger adults (age 18-39) is 11.23 hospitalizations per 100,000 people at risk when there are 0 days over the pm2.5 national standard (95\% CI: (-12.56, 35.02)). The 95\% confidence interval contains negative values; this result is illogical but a byproduct of modeling hospitalization rate using the Gaussian distribution. We tried to use the Poisson distribution but this model didn't converge. We estimate that for every additional day over the national pm2.5 standard, we expect a 0.14 change in this hospitalization rate (95\% CI: (-0.06, 0.34)). This result is not statistically significant.
+
+```{r, echo = FALSE, fig.height = 6}
+plot2a
+plot2b
+```
+
+The estimated number of hospitalizations due to COPD or asthma in older adults (age 40+) is 379.31 hospitalizations per 100,000 people at risk when there are zero days over the pm2.5 national standard (95\% CI: (177.76, 580.86)). We estimate a 1.21 change in this hospitalization rate (95\% CI: (-0.02, 2.44)) for every additional day over the national pm2.5 standard. This result is not statistically significant.
+
+```{r, echo = FALSE, fig.height = 6}
+plot3a
+plot3b
+```
+
+The estimated number of hospitalizations due to diabetes short-term complications is 39.32 hospitalizations per 100,000 people at risk when there are zero days over the pm2.5 national standard (95\% CI: (7.08, 71.56)). We estimate a 0.62 change in this hospitalization rate (95\% CI: (0.37, 0.87)) for every additional day over the national pm2.5 standard. This result is statistically significant and estimates an approximate 1\% increase in hospitalizations due to diabetes short-term complications per 100,000 people at risk when there are zero days over the pm2.5 national standard.
+
+```{r, echo = FALSE, fig.height = 6}
+plot4a
+plot4b
+```
+
+The estimated number of hospitalizations due to heart failure is 202.6 hospitalizations per 100,000 people at risk when there are zero days over the pm2.5 national standard (95\% CI: (84.16, 321.04)). We estimate a -0.63 change in this hospitalization rate (95\% CI: (-1.43, 0.17)) for every additional day over the national pm2.5 standard. This result is not statistically significant.
+
+```{r, echo = FALSE, fig.height = 6}
+plot5a
+plot5b
+```
+
+The estimated number of hospitalizations due to pneumonia is 165.34 hospitalizations per 100,000 people at risk when there are zero days over the pm2.5 national standard (95\% CI: (58.36, 272.32)). We estimate a 0.58 change in this hospitalization rate (95\% CI: (-0.09, 1.25)) for every additional day over the national pm2.5 standard. This result is not statistically significant.
+
+#### Bayes CAR Model results 
+
+For the Bayes CAR model, we apply the same formula as the GLMM. We use the default priors for hyperparameters of the spatiotemporal random effects, and they are from Uniform(0,1) and Inverse Gamma (1, 0.001), respectively. 
+
+We detect some positive associations between PM2.5 level and the preventable hospitalization rate resulting from asthma among young adults (age 18-39), asthma among older adults (age 40+), short-term diabetes complications, heart failure, and pneumonia.
+
+For every additional day over the national PM2.5 standard, we expect the hospitalization rates due to asthma among young adults (age 18-39) and older adults (age 40+)/COPD patients to increase by 0.27 (95\% Credible Interval: (0.09,0.43)) and 4.83 (95% Credible Interval: (3.31,6.3)). 
+
+We also expect the hospitalization rates caused by short-term diabetes complications, heart failure, and pneumonia to increase by 0.93 (95% Credible Interval: (0.65,1.22)), 1.28 (95\% Credible Interval: (0.22,2.31)), and 1.44 (95\% Credible Interval: (0.61,2.25)) with every additional day over the national PM2.5 standard, respectively. 
+
+```{r (Xinye) CAR model, message = FALSE, warning = FALSE, cache = T,results = 'hide',include = FALSE}
+#1. prepare data for CAR model: need to delete counties with NAs in pm25
+dat_car <- datnew %>% filter(!county %in% c("Yuba","El Dorado"))
+
+#2. W matrix with binary elements that indicate shared border between counties
+W.nb <-poly2nb(cali)
+W.list <- nb2listw(W.nb, style = "B")
+W <- nb2mat(W.nb, style = "B")
+rownames(W) = cali@data$NAME;colnames(W) = cali@data$NAME
+
+# we have limited counties
+index = c(which(is.na(match(loc.all$county,dat_car$county))))
+W <- W[-index,-index]
+
+# Shasta d.n. have any neighbor -> manually inpute the closet neighbor as 1
+# make sure W is symmetric
+W[12,28] <- 1; W[28,12] <- 1;W[12,14] <- 1;W[14,12] <- 1
+
+#3. Impute missing covariate 
+dat_car[which(is.na(dat_car$pm25)),c("pm25")] <- c(1,0,0,1.61,10,1,0,1,1,1,0,0,.5,.5,3.5,4,1)
+
+#4. CAR model
+
+# the function "car.model" takes an outcome name (character) and return the summary that includes coefficient estimate and credible interval
+
+# default data: dat_car
+car.model <- function(y,data = dat_car){
+  require("knitr");require("CARBayes");require("dplyr")
+  if (! y %in% names(dat_car)[8:24]) 
+  {print("Outcome does not exist")}
+  else{
+    y2 = pull(dat_car[,y])
+    
+    dat_car_copy <- data.frame(dat_car) %>% 
+      mutate(outcome_interest = y2) %>%
+      dplyr::select(outcome_interest,year,age60_perc,est.black.percent,
+             bachelor_perc,pm25)
+    
+    set.seed(1214)
+    fitst_adapt <- ST.CARadaptive(outcome_interest~pm25 + age60_perc + 
+                                    est.black.percent +
+                                    bachelor_perc + year, 
+                                  family = "gaussian",
+                                  data = dat_car_copy, W = W, burnin = 500, 
+                                  n.sample = 50500,
+                                  thin = 10)
+    #fitst_adapt$summary.results[c(2:5),c(1,2,3)]
+    
+    point_estimate <- unname(round(fitst_adapt$summary.results[c(2:5),1],2))
+    lb <- round(fitst_adapt$summary.results[c(2:5),2],2)
+    ub <- round(fitst_adapt$summary.results[c(2:5),3],2)
+    CI <- noquote(paste("(",lb,",",ub,")",sep = ""))
+    var_name <- c("pm25","Age>60 (%)", "Black (%)", ">Bachelor (%)")
+    model_summary <- cbind(var_name, point_estimate, CI)
+    colnames(model_summary) <- c("","Estimate","95% Credible Interval")
+    tb <- kable(model_summary, caption = noquote(paste("Bayes CAR results for",y)))
+    return(tb)
+  }
+}
+
+# say, we are interested in the following 5 causes 
+car_pneumonia <- car.model("pneumonia")
+car_asthma_older <- car.model("asthma_older")
+car_asthma_young <- car.model("asthma_young")
+car_heart_failure <- car.model("heart_fail")
+car_diabetes_st <- car.model("diabetes_st")
+```
+
+```{r (Xinye) CAR results, warning = FALSE, message = FALSE}
+car_pneumonia
+car_asthma_older
+car_asthma_young 
+car_heart_failure
+car_diabetes_st
+```
+
+## Narrative
+
+#### Findings
+
+The exploratory data analysis showed that most of our health outcomes have higher hospitalization rates in the central valley region and the northern region. We also observe that the PM2.5 levels are often higher in the central valley region.  
+
+Using a GLMM, we estimate a positive relationship between PM2.5 levels and hospitalization rates due to asthma in younger adults (18-39), COPD or asthma in older adults (40+), diabetes short-term complications, and pneumonia. The only statistically significant result is that for diabetes short-term complications. This significant result could be due to chance because we fit so many regression models to the dataset with different predictors.
+
+Using a Bayes CAR model, we detect a positive association between PM2.5 level and the preventable hospitalization rate resulting from asthma among young adults (age 18-39), asthma among older adults (age 40+), short-term diabetes complications, heart failure, and pneumonia. All of these results are significant.
+
+#### Limitations
+
+The GLMM was fit using the Gaussian distribution. This is not ideal because the response variable is a non-negative rate. A better distribution might be the Poisson distribution; however, the model didn't converge when we tried to fit it with the Poisson distribution. Another assumption of our GLMM was that the counties shared a common slope (i.e. we fit a random intercepts model, not a random intercepts and random slopes model). Again, we were constrained by convergence issues. A final limitation of the GLMM is that it inadequately addressed the spatiotemporal correlation intrinsic to our dataset. We clustered by county nested within region; however, this doesn't address the correlation between neighboring regions or a decaying correlation between counties 
+
+Our predictor of particular interest is the annual number of days above national PM2.5 standard by county. However, this variable has lots of zeros which could affect our modelling accuracy. There is also some missingness of PM2.5 levels; the Bayes CAR model cannot handle such missingness. We manually input the missing PM2.5 values based on values in the previous two years. Therefore, we potentially lose some temporal trends for PM2.5; this could lead to biased estimates. The Bayes CAR model also requires an adjacency matrix that represents neighboring counties. However, due to a limited number of counties in our data, Shasta County is isolated. Therefore, we manually make the two closest counties (Butte and Mendocino) its neighbors. This modification to the adjacency matrix might affect the accuracy of our estimation
+
+#### Extensions
+
+Many of our limitations stemmed from data that was not highly granular. It would be interesting to extend this analysis by obtaining data aggregated at the daily or weekly level. It would also be interesting to add additional counties to the dataset so we don't have missing neighbors, as we did in this analysis. These changes to our dataset might produce more reasonable estimates of the effect of PM2.5 levels.
+
+Our analysis pertained to California air quality and various health outcomes. There are many other regions globally that affected as or more severely by poor air quality (e.g. China and India). It would interesting to evaluate whether these regions exhibit a similar relationship between PM2.5 levels and health outcomes.
