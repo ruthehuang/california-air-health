@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.align = "center
 
 ## Motivation and Overview
 
-Nearly [90 million Americans](https://i.redd.it/bbnxf9b8rm321.jpg) are breathing air that doesn't meet the World Health Oranizations safe PM2.5 limit. The [UK Department for Environment, Food & Rural Affairs](https://laqm.defra.gov.uk/public-health/pm25.html) states that long-term PM2.5 exposure poses a variety of health risks; most commonly, health consequences due to long-term PM2.5 exposure take the form of cardiovascular or respiratory diseases. This poses a serious public health problem because such diseases reduce both quality and length of life. 
+Nearly [90 million Americans](https://i.redd.it/bbnxf9b8rm321.jpg) are breathing air that doesn't meet the World Health Oranization's safe PM2.5 limit. The [UK Department for Environment, Food & Rural Affairs](https://laqm.defra.gov.uk/public-health/pm25.html) states that long-term PM2.5 exposure poses a variety of health risks; most commonly, health consequences due to long-term PM2.5 exposure take the form of cardiovascular or respiratory diseases. This poses a serious public health problem because such diseases reduce both quality and length of life. 
 
 There are many sources of PM2.5, including vehicular emissions and ash. California's large traffic volume and increasingly frequent wildfires both contribute to the state's PM2.5 levels. While wildfires are natural, climate change is making them more common and more severe. According to the [Environmental Protection Agency](https://www.epa.gov/sites/production/files/2016-09/documents/climate-change-ca.pdf), the state of California is becoming warmer as a whole and southern California, in particular, is becoming drier. California's average annual precipitation and temperature from 1895-2017 are shown below. These unnaturally warm and dry conditions promote frequent and devastating wildfires. 
 
@@ -27,7 +27,7 @@ We are interested in investigating California county-level hospitalization rates
 
 A 2006 study by Dominici, Peng, and Bell showed that short-term exposure to PM2.5 increases the risk for hospital admission for cardiovascular and respiratory diseases. Specifically, there was a short-term increase in hospital admission rates associated with PM2.5 for heart disease, heart rhythm, heart failure, COPD, and respiratory infection; the largest association was for heart failure. In a 2009 paper, Neupane et al. found that long-term exposure to higher levels of nitrogen dioxide and PM2.5 is significantly associated with hospitalization for community-aquired pneumonia among elderly patients in Hamilton, Ontario, Canada. Similarly, Ostro et al. found in 2008 that components of PM2.5 were associated with several childhood respiratory diseases including pneumonia, bronchitis, and asthma among children in six California counties. Much work on the association of PM2.5 with health outcomes focuses on birth outcomes or respiratory issues; we expand this exploration to additional classifications of preventable hospitalization.
 
-Bell et al. examine how air pollution control could not only prevent adverse health outcomes but also make a monumental economic impact. Air pollution control policy could help prevent over 156,000 deaths, 4 million asthma attacks, 300,000 children's medical visits, and almost 48,000 cases of chronic bronchitis over a twenty-year period in Santiago, Sao Paulo, and Mexico City; the economic value of these avoided health outcomes is about 21-165 billion USD. Fisk and Chan found in 2016 that using portable air cleaners led to economic benefits exceeding or far exceeding intervention costs. Thus, understanding how PM2.5 is related to preventable hospitalizations can help California counties plan for intervention or even prevention efforts as well as budget for the impact of adverse health outcomes from wildfires.
+Bell et al. examine how air pollution control could not only prevent adverse health outcomes but also make a monumental economic impact. Air pollution control policy could help prevent over 156,000 deaths, 4 million asthma attacks, 300,000 children's medical visits, and almost 48,000 cases of chronic bronchitis over a twenty-year period in Santiago, Sao Paulo, and Mexico City; the economic value of these avoided health outcomes is about 21-165 billion USD. Fisk and Chan found in 2016 that using portable air cleaners led to economic benefits exceeding or far exceeding intervention costs. Thus, understanding how PM2.5 is related to preventable hospitalizations can help California counties plan for intervention or even prevention efforts as well as budget for the impact of adverse health outcomes from elevated PM2.5 levels.
 
 ## Initial Questions
 
@@ -188,7 +188,7 @@ bigplot <- function(var, cut = NULL, omit = F)
 
 ### Days Over National PM2.5 Standard by County Over Time
 
-```{r, fig.height = 9, fig.width = 14}
+```{r, fig.height = 9, fig.width = 14, echo = F}
 par(oma = c(4, 0, 0, 0), mar = c(0.5, 0.5, 1.5, 0.5), mfrow = c(2, 4))
 pmplot(2010)
 pmplot(2011)
@@ -362,7 +362,7 @@ kable(tb_outcome_st, caption = "Spatio-temporal trends for all outcomes")
 
 ## Data Analysis
 
-We used two approaches to measure the effect of pm2.5 on various hospitalization rates: (1) generalized linear mixed models and (2) Bayes conditional autoregression models. Recall from the data discussion above that we have 8 records for each county for each medical condition hospitalization rate (one record per year).
+We used two approaches to measure the effect of PM2.5 on various hospitalization rates: (1) generalized linear mixed models and (2) Bayes conditional autoregression models. Recall from the data discussion above that we have 8 records for each county for each medical condition hospitalization rate (one record per year).
 
 #### 1. GLMM
 
@@ -378,9 +378,9 @@ The Bayes CAR model estimates the aggregated effect of PM2.5 on preventable hosp
 
 ## Results and Summary
 
-#### GLMM results
+#### 1. GLMM Results
 
-We estimate a positive relationship between PM2.5 levels and hospitalization rates due to asthma in younger adults (18-39), COPD or asthma in older adults (40+), diabetes short-term complications, and pneumonia. The only statistically significant result is that for diabetes short-term complications. This significant result should be taken with a grain of salt because we fit so many regression models to the dataset with different predictors that we could be measuring a significant effect by chance. The results are discussed in further detail below were obtained using the following functions.
+We estimate a positive relationship between PM2.5 levels and hospitalization rates due to asthma in younger adults (18-39), COPD or asthma in older adults (40+), diabetes short-term complications, and pneumonia. The only statistically significant result is that for diabetes short-term complications. This significant result should be taken with a grain of salt because we fit so many regression models to the dataset with different predictors that we could be measuring a significant effect by chance. The results are discussed in further detail below were obtained using the following function:
 
 ```{r Define glm function}
 # Gaussian distribution
@@ -551,39 +551,39 @@ plot1a
 plot1b
 ```
 
-The estimated number of hospitalizations due to asthma in younger adults (age 18-39) is 11.23 hospitalizations per 100,000 people at risk when there are 0 days over the pm2.5 national standard (95\% CI: (-12.56, 35.02)). The 95\% confidence interval contains negative values; this result is illogical but a byproduct of modeling hospitalization rate using the Gaussian distribution. We tried to use the Poisson distribution but this model didn't converge. We estimate that for every additional day over the national pm2.5 standard, we expect a 0.14 change in this hospitalization rate (95\% CI: (-0.06, 0.34)). This result is not statistically significant.
+The estimated number of hospitalizations due to asthma in younger adults (age 18-39) is 11.23 hospitalizations per 100,000 people at risk when there are 0 days over the PM2.5 national standard (95\% CI: (-12.56, 35.02)). The 95\% confidence interval contains negative values; this result is illogical but a byproduct of modeling hospitalization rate using the Gaussian distribution. We tried to use the Poisson distribution but this model didn't converge. We estimate that for every additional day over the national PM2.5 standard, we expect a 0.14 change in this hospitalization rate (95\% CI: (-0.06, 0.34)). This result is not statistically significant.
 
 ```{r, echo = FALSE, fig.height = 6}
 plot2a
 plot2b
 ```
 
-The estimated number of hospitalizations due to COPD or asthma in older adults (age 40+) is 379.31 hospitalizations per 100,000 people at risk when there are zero days over the pm2.5 national standard (95\% CI: (177.76, 580.86)). We estimate a 1.21 change in this hospitalization rate (95\% CI: (-0.02, 2.44)) for every additional day over the national pm2.5 standard. This result is not statistically significant.
+The estimated number of hospitalizations due to COPD or asthma in older adults (age 40+) is 379.31 hospitalizations per 100,000 people at risk when there are zero days over the PM2.5 national standard (95\% CI: (177.76, 580.86)). We estimate a 1.21 change in this hospitalization rate (95\% CI: (-0.02, 2.44)) for every additional day over the national PM2.5 standard. This result is not statistically significant.
 
 ```{r, echo = FALSE, fig.height = 6}
 plot3a
 plot3b
 ```
 
-The estimated number of hospitalizations due to diabetes short-term complications is 39.32 hospitalizations per 100,000 people at risk when there are zero days over the pm2.5 national standard (95\% CI: (7.08, 71.56)). We estimate a 0.62 change in this hospitalization rate (95\% CI: (0.37, 0.87)) for every additional day over the national pm2.5 standard. This result is statistically significant and estimates an approximate 1\% increase in hospitalizations due to diabetes short-term complications per 100,000 people at risk when there are zero days over the pm2.5 national standard.
+The estimated number of hospitalizations due to diabetes short-term complications is 39.32 hospitalizations per 100,000 people at risk when there are zero days over the PM2.5 national standard (95\% CI: (7.08, 71.56)). We estimate a 0.62 change in this hospitalization rate (95\% CI: (0.37, 0.87)) for every additional day over the national PM2.5 standard. This result is statistically significant and estimates an approximate 1\% increase in hospitalizations due to diabetes short-term complications per 100,000 people at risk when there are zero days over the PM2.5 national standard.
 
 ```{r, echo = FALSE, fig.height = 6}
 plot4a
 plot4b
 ```
 
-The estimated number of hospitalizations due to heart failure is 202.6 hospitalizations per 100,000 people at risk when there are zero days over the pm2.5 national standard (95\% CI: (84.16, 321.04)). We estimate a -0.63 change in this hospitalization rate (95\% CI: (-1.43, 0.17)) for every additional day over the national pm2.5 standard. This result is not statistically significant.
+The estimated number of hospitalizations due to heart failure is 202.6 hospitalizations per 100,000 people at risk when there are zero days over the PM2.5 national standard (95\% CI: (84.16, 321.04)). We estimate a -0.63 change in this hospitalization rate (95\% CI: (-1.43, 0.17)) for every additional day over the national PM2.5 standard. This result is not statistically significant.
 
 ```{r, echo = FALSE, fig.height = 6}
 plot5a
 plot5b
 ```
 
-The estimated number of hospitalizations due to pneumonia is 165.34 hospitalizations per 100,000 people at risk when there are zero days over the pm2.5 national standard (95\% CI: (58.36, 272.32)). We estimate a 0.58 change in this hospitalization rate (95\% CI: (-0.09, 1.25)) for every additional day over the national pm2.5 standard. This result is not statistically significant.
+The estimated number of hospitalizations due to pneumonia is 165.34 hospitalizations per 100,000 people at risk when there are zero days over the PM2.5 national standard (95\% CI: (58.36, 272.32)). We estimate a 0.58 change in this hospitalization rate (95\% CI: (-0.09, 1.25)) for every additional day over the national PM2.5 standard. This result is not statistically significant.
 
-#### Bayes CAR Model results 
+#### 2. Bayes CAR Model results 
 
-For the Bayes CAR model, we apply the same formula as the GLMM. We use the default priors for hyperparameters of the spatiotemporal random effects, and they are from Uniform(0,1) and Inverse Gamma (1, 0.001), respectively. 
+For the Bayes CAR model, we apply the same formula as the GLMM. We use the default priors for hyperparameters of the spatiotemporal random effects, and they are from $Uniform(0,1)$ and $Inverse \ Gamma (1, 0.001)$, respectively. 
 
 We detect some positive associations between PM2.5 level and the preventable hospitalization rate resulting from asthma among young adults (age 18-39), asthma among older adults (age 40+), short-term diabetes complications, heart failure, and pneumonia.
 
