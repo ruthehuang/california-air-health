@@ -74,7 +74,7 @@ shinyServer(
     }
     
     output$video <- renderUI({
-        HTML('<iframe width="853.33" height="480" src="https://www.youtube.com/embed/EF-9I38ud4s" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')
+      HTML('<iframe width="775.8" height="485" src="https://www.youtube.com/embed/Ra5NGboQpfY" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')
     })
     
   }
