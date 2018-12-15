@@ -1,0 +1,10 @@
+name: ca_app
+title:
+username:
+account: rhuang
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 617423
+bundleId: 1764661
+url: https://rhuang.shinyapps.io/ca_app/
+when: 1544844280.75642

@@ -3,11 +3,11 @@ library(shiny); library(shinydashboard); library(dplyr); library(rgdal); library
 load("data/dat.R")
 # load("data/dat_car.RData")
 # load("data/W.R")
-load("data/car_pneumonia.R")
-load("data/car_asthma_older.R")
-load("data/car_asthma_young.R")
-load("data/car_heart_fail.R")
-load("data/car_diabetes_st.R")
+load("data/table_pneumonia.R")
+load("data/table_asthma_older.R")
+load("data/table_asthma_young.R")
+load("data/table_heart_fail.R")
+load("data/table_diabetes_st.R")
 cali <- readOGR(dsn = "data/CA_Counties", layer = "CA_Counties_TIGER2016")
 
 
@@ -67,19 +67,20 @@ cutoffs <- list(angina = c(0, 10, 20, 30, 45, 65), asthma_young = c(0, 10, 20, 3
 ####### Xinye's functions ############
 
 car.model <- function(y){
-  obj <- ifelse(y == "asthma_young", car_asthma_young,
-                ifelse(y == "asthma_older", car_asthma_older,
-                       ifelse(y == "diabetes_st", car_diabetes_st,
-                              ifelse(y == "heart_fail", car_heart_fail, car_pneumonia))))
-  point_estimate <- unname(round(obj[[1]][c(2:5),1],2))
-  lb <- round(obj[[1]][c(2:5),2],2)
-  ub <- round(obj[[1]][c(2:5),3],2)
-  CI <- noquote(paste("(",lb,",",ub,")",sep = ""))
-  var_name <- c("pm25","Age>60 (%)", "Black (%)", ">Bachelor (%)")
-  model_summary <- cbind(var_name, point_estimate, CI)
-  colnames(model_summary) <- c("","Estimate","95% Credible Interval")
-  tb <- kable(model_summary)
-  return(tb)
+  ifelse(y == "asthma_young", kable(table_asthma_young),
+                ifelse(y == "asthma_older", kable(table_asthma_older),
+                       ifelse(y == "diabetes_st", kable(table_diabetes_st),
+                              ifelse(y == "heart_fail", kable(table_heart_fail), kable(table_pneumonia)))))
+  # point_estimate <- unname(round(obj[[1]][c(2:5),1],2))
+  # lb <- round(obj[[1]][c(2:5),2],2)
+  # ub <- round(obj[[1]][c(2:5),3],2)
+  # CI <- noquote(paste("(",lb,",",ub,")",sep = ""))
+  # var_name <- c("pm25","Age>60 (%)", "Black (%)", ">Bachelor (%)")
+  # model_summary <- cbind(var_name, point_estimate, CI)
+  # colnames(model_summary) <- c("","Estimate","95% Credible Interval")
+  # tb <- kable(model_summary)
+  # kable(obj)
+  # kable(obj)
 }
 
 ##### Emily's functions #######
