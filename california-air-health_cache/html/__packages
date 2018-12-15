@@ -1,4 +1,14 @@
 base
+methods
+datasets
+utils
+grDevices
+graphics
+stats
+splines
+Matrix
+lme4
+knitr
 tidyverse
 ggplot2
 tibble
@@ -11,7 +21,6 @@ forcats
 lubridate
 sp
 rgdal
-Matrix
 SpatioTemporal
 nlme
 mgcv
@@ -23,4 +32,3 @@ CARBayesST
 ape
 kableExtra
 bindrcpp
-knitr
